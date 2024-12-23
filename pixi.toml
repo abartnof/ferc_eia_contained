@@ -1,0 +1,31 @@
+[project]
+authors = ["abartnof <abartnof@users.noreply.github.com>"]
+channels = ["conda-forge"]
+description = "Add a short description here"
+name = "ferc_eia"
+platforms = ["osx-arm64", "win-64"]
+version = "0.1.0"
+
+[tasks]
+clean_positive_matches = { cmd = ["Rscript", "scripts/clean_positive_matches.R"] }
+create_matches_and_mismatches = { cmd = ["Rscript", "scripts/create_matches_and_mismatches.R"] }
+
+[dependencies]
+r-base = ">=4.4.2,<4.5"
+r-tidyverse = ">=2.0.0,<3"
+r-arrow = ">=18.1.0,<19"
+r-dtplyr = ">=1.3.1,<2"
+r-stringdist = ">=0.9.14,<0.10"
+r-recipes = ">=1.1.0,<2"
+r-rsample = ">=1.2.1,<2"
+python = ">=3.7,<3.9"
+r-skimr = ">=2.1.5,<3"
+
+[pypi-dependencies]
+tensorflow = ">=2.13.0, <3"
+ray = { version = ">=2.10.0, <3", extras = ["tune"] }
+optuna = ">=4.1.0, <5"
+keras = ">=2.13.1, <3"
+pandas = ">=2.0.3, <3"
+lightgbm = ">=4.5.0, <5"
+dask = { version = ">=2023.5.0, <2024", extras = ["dataframe"] }
