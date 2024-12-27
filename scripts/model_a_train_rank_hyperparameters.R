@@ -1,6 +1,24 @@
 library(tidyverse)
-library(jsonlite)
+# library(jsonlite)
 library(skimr)
+
+fn_in <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/gb_ray_tune/grid_search.csv'
+Grid <- read_csv(fn_in)
+Grid %>%
+	mutate(date_time = lubridate::as_datetime(date)) %>%
+	select(date_time, auc, binary_logloss) %>%
+	gather(metric, value, -date_time) %>%
+	ggplot(aes(x = date_time, y = value)) +
+	geom_point() +
+	geom_smooth() +
+	facet_wrap(~metric, scales='free')
+
+Grid %>%
+	arrange(binary_logloss, desc(auc)) %>%
+	head(5) %>%
+	select(starts_with('config')) %>%
+	as.data.frame
+# End here
 
 dir_hp <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/gb_ray_tune/' 
 list_dirs <- list.dirs(dir_hp, recursive = FALSE, full.names = TRUE)

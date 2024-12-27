@@ -7,21 +7,24 @@
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
+import dask
 from ray import train, tune
 from ray.tune.search.optuna import OptunaSearch
-# from ray.tune.s|chedulers import ASHAScheduler
+from ray.tune.schedulers import ASHAScheduler
 from ray.tune.search import ConcurrencyLimiter
+from optuna.samplers import TPESampler
 
 
-# In[15]:
+# In[5]:
 
 
 fn_train_x = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/train_x.parquet'
 fn_train_y = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/train_y.parquet'
 dir_hyperparameters = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train'
+fn_out = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/gb_ray_tune/grid_search.csv'
 
 
-# In[13]:
+# In[6]:
 
 
 def fit_mod(space):
@@ -29,8 +32,6 @@ def fit_mod(space):
     # ELT
     X = pd.read_parquet(fn_train_x)
     Y = pd.read_parquet(fn_train_y)
-    # X = pd.read_parquet('/Volumes/Extreme SSD/rematch1_predictor/full_training_data/train_x.parquet')
-    # Y = pd.read_parquet('/Volumes/Extreme SSD/rematch1_predictor/full_training_data/full_data_y.parquet')
     
     size_of_train_set = round(0.8 * X.shape[0])
     rows_for_train_set = np.random.choice(a=X.index, size=size_of_train_set, replace=False)
@@ -43,7 +44,7 @@ def fit_mod(space):
     gbm = lgb.train(
         space,
         train_set,
-        valid_sets=[val_set],
+        valid_sets=[val_set]    
     )
     binary_logloss = gbm.best_score['valid_0']['binary_logloss']
     auc = gbm.best_score['valid_0']['auc']
@@ -55,46 +56,39 @@ def fit_mod(space):
     )
 
 
-# In[1]:
+# In[7]:
 
 
 space = {
-    'num_iterations': tune.randint(1, 500),
-    # 'num_rounds': tune.randint(1, 500),
+    # 'num_iterations': tune.randint(1, 1000),
+    'verbose':-1,
+    'num_rounds': tune.randint(1, 500),
     'learning_rate': tune.uniform(0.0001, 1),
     'min_data_in_leaf': tune.randint(1, 200),
     'objective':'binary', 
     # 'early_stopping_round':2,
+    'early_stopping_round':-1,
     'metrics':['binary_logloss', 'auc']
     }
 
 
-# In[17]:
+# In[8]:
 
 
-# asha_scheduler = ASHAScheduler(
-#     time_attr='training_iteration',
-#     metric='binary_logloss',
-#     mode='min',
-#     max_t=1000,
-#     grace_period=50,
-#     reduction_factor=3,
-#     brackets=1,
-# )
+#asha = ASHAScheduler(metric='binary_logloss', mode='min')
 
 search_alg = OptunaSearch(metric="binary_logloss", mode="min")
 search_alg = ConcurrencyLimiter(search_alg, max_concurrent=2)
 
 
-# In[18]:
+# In[9]:
 
 
 tuner = tune.Tuner(
     fit_mod,
     tune_config=tune.TuneConfig(
-        # scheduler=asha_scheduler,
+        #scheduler=asha,
         search_alg=search_alg,
-        num_samples=1000
     ),
     param_space=space,
     run_config=train.RunConfig(
@@ -103,6 +97,12 @@ tuner = tune.Tuner(
     )
 )
 results = tuner.fit()
+
+
+# In[10]:
+
+
+results.get_dataframe().to_csv(fn_out, index=False)
 
 
 # In[ ]:
@@ -119,7 +119,7 @@ results = tuner.fit()
 # restored_tuner.get_results().get_dataframe().to_csv(fn_results)
 
 
-# In[1]:
+# In[2]:
 
 
 # !jupyter nbconvert --to script model_a_hyperparameter_search.ipynb
