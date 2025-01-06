@@ -35,7 +35,7 @@ fn_ferc_steam <- file.path(dir_input, 'ferc_steam.RDS')
 fn_positive_matches <- file.path(dir_working, 'positive_matches.RDS')
 fn_matches_and_mismatches <- file.path(dir_working, 'matches_and_mismatches.parquet')
 
-NUM_COMPARISONS <- 2000L
+NUM_COMPARISONS <- 1000L
 
 EiaPlantParts <- readRDS(fn_eia_plant_parts) %>%
 	lazy_dt() 
