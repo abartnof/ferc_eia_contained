@@ -29,18 +29,22 @@ library(skimr)
 library(stringdist)
 library(tidyverse)
 
-dir_input <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/input_data/'
-dir_working  <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/'
+data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
+dir_input <- file.path(data_dir, '/input_data/')
+dir_working <- file.path(data_dir, '/working_data/')
+dir_working_model_a_training <- file.path(
+	data_dir, 
+	'/working_data/model_a/model_a_training/'
+)
 
-
-# fn_raw_training_data <- file.path(dir_input, 'eia_ferc1_train.csv')
 fn_eia_plant_parts <- file.path(dir_input, 'eia_plant_parts.RDS')
 fn_ferc_steam <- file.path(dir_input, 'ferc_steam.RDS')
 fn_ferc_utilities <- file.path(dir_input, 'ferc_utilities.RDS')
 fn_matches_and_mismatches <- file.path(dir_working, 'matches_and_mismatches.parquet')
-fn_all_joined_data <- file.path(dir_working, 'all_joined_data.parquet')
-fn_stop_words_plant_name <- file.path(dir_working, 'stop_words_plant_name.csv')
-fn_stop_words_utility_name <- file.path(dir_working, 'fn_stop_words_utility.csv')
+
+fn_all_joined_data <- file.path(dir_working_model_a_training, 'all_joined_data.parquet')
+fn_stop_words_plant_name <- file.path(dir_working_model_a_training, 'stop_words_plant_name.csv')
+fn_stop_words_utility_name <- file.path(dir_working_model_a_training, 'stop_words_utility.csv')
 
 FercSteam <- readRDS(fn_ferc_steam) %>% lazy_dt
 FercUtilities <- readRDS(fn_ferc_utilities) %>% lazy_dt

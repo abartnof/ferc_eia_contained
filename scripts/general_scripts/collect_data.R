@@ -23,10 +23,11 @@ library(RSQLite)
 library(lubridate)
 
 fn_pudl_sqlite <- '/Volumes/Extreme SSD/pudl.sqlite'
-dir_out  <- '~/Documents/rmi/rematch_ferc_eia1/clean_data'
-fn_eia_plant_parts <- file.path(dir_out, 'eia_plant_parts.RDS')
-fn_ferc_steam <- file.path(dir_out, 'ferc_steam.RDS')
-fn_ferc_utilities <- file.path(dir_out, 'ferc_utilities.RDS')
+
+data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
+fn_eia_plant_parts <- file.path(data_dir, '/input_data/', 'eia_plant_parts.RDS')
+fn_ferc_steam <- file.path(data_dir, '/input_data/', 'ferc_steam.RDS')
+fn_ferc_utilities <- file.path(data_dir, '/input_data/', 'ferc_utilities.RDS')
 
 con <- DBI::dbConnect(RSQLite::SQLite(), dbname = fn_pudl_sqlite)
 

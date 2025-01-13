@@ -27,8 +27,9 @@ library(arrow)
 # library(stringdist)
 set.seed(1)
 
-dir_input <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/input_data/'
-dir_working  <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/'
+data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
+dir_input <- file.path(data_dir, '/input_data/')
+dir_working <- file.path(data_dir, '/working_data/')
 
 fn_eia_plant_parts <- file.path(dir_input, 'eia_plant_parts.RDS')
 fn_ferc_steam <- file.path(dir_input, 'ferc_steam.RDS')

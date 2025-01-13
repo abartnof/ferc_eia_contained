@@ -25,18 +25,20 @@ library(rsample)
 library(arrow)
 set.seed(1)
 
+data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
+dir_input <- file.path(data_dir, '/input_data/')
+dir_working <- file.path(data_dir, '/working_data/')
+dir_working_model_a_training <- file.path(
+	data_dir, 
+	'/working_data/model_a/model_a_training/'
+)
 
-# dir_input <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/input_data/'
-dir_working  <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/'
-dir_train <- file.path(dir_working, 'model_a/train/')
-
-fn_all_joined_data <- file.path(dir_working, 'all_joined_data.parquet')
-fn_id <- file.path(dir_train, 'id.parquet')
-fn_y <- file.path(dir_train, 'y.parquet')
-fn_x <- file.path(dir_train, 'x.parquet')
+fn_all_joined_data <- file.path(dir_working_model_a_training, 'all_joined_data.parquet')
+fn_id <- file.path(dir_working_model_a_training, 'id.parquet')
+fn_y <- file.path(dir_working_model_a_training, 'y.parquet')
+fn_x <- file.path(dir_working_model_a_training, 'x.parquet')
 
 JoinedData <- read_parquet(fn_all_joined_data)
-dir.create(dir_train, showWarnings = TRUE)
 
 # X
 # fn_train_x			<- file.path(dir_train, 'train_x.parquet')

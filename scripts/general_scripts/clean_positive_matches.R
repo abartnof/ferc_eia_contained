@@ -20,8 +20,9 @@
 library(tidyverse)
 library(skimr)
 
-dir_input <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/input_data/'
-dir_working  <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/'
+data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
+dir_input <- file.path(data_dir, '/input_data/')
+dir_working <- file.path(data_dir, '/working_data/')
 
 fn_raw_training_data <- file.path(dir_input, 'eia_ferc1_training.csv')
 fn_eia_plant_parts <- file.path(dir_input, 'eia_plant_parts.RDS')
@@ -35,14 +36,14 @@ RawTrainingData <- read_csv(fn_raw_training_data, col_types = 'ccccc') %>%
 	select(record_id_ferc1, record_id_eia)
 
 #### Filter to cases where the training data includes 'legal' data based on our rules in the prev step ####
-print('Num. cases where the training data can be found in our predefined hypothesis space:')
-RawTrainingData %>%
-	mutate(
-		is_ferc1_legal = record_id_ferc1 %in% FercSteam$record_id_ferc1,
-		is_eia_legal = record_id_eia %in% EiaPlantParts$record_id_eia
-	) %>%
-	count(is_ferc1_legal, is_eia_legal) %>%
-	mutate(prop = prop.table(n))
+# print('Num. cases where the training data can be found in our predefined hypothesis space:')
+# RawTrainingData %>%
+# 	mutate(
+# 		is_ferc1_legal = record_id_ferc1 %in% FercSteam$record_id_ferc1,
+# 		is_eia_legal = record_id_eia %in% EiaPlantParts$record_id_eia
+# 	) %>%
+# 	count(is_ferc1_legal, is_eia_legal) %>%
+# 	mutate(prop = prop.table(n))
 
 LegalTrainingData <-
 	RawTrainingData %>%
