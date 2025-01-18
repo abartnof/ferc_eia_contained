@@ -33,11 +33,8 @@ EiaPlantParts <- readRDS(fn_eia_plant_parts) %>% lazy_dt
 #### Run Script: tranche version ####
 tranches_list <- list.files(dir_tranches)
 
-
-i <- 1
 for (fn_input in tranches_list){
-	print(c(i, length(tranches_list)))
-	i <- i + 1L
+	print(fn_input)
 	
 	Tranche <- read_parquet(file.path(dir_tranches, fn_input)) %>% lazy_dt
 	
