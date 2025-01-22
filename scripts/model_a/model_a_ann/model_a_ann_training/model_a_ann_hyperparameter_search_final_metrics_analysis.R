@@ -24,15 +24,31 @@ Metrics <- read_csv(fn_metrics, col_types = cols('hp_rank' = 'i', 'fold' = 'i'))
 History <- read_csv(fn_history, col_types = cols('hp_rank' = 'i', 'fold' = 'i', 'epoch' = 'i'))
 HP <- read_csv(fn_hp)
 
+# Loss
+# Pretty clear that hp_rank == 3 has the lowest log-loss
+Metrics %>%
+	group_by(hp_rank) %>%
+	summarize(
+		`Mean log-loss` = mean(log_loss),
+		`Median log-loss` = median(log_loss),
+	) %>%
+	ungroup %>%
+	ggplot(aes(x = `Mean log-loss`, y = `Median log-loss`, label = hp_rank)) +
+	geom_label()
+
 # Boxplots
 Metrics %>%
 	select(-fold) %>%
 	gather(variable, value, -hp_rank) %>%
-	mutate(hp_rank = ordered(hp_rank)) %>%
-	ggplot(aes(x = hp_rank, y = value)) +
+	mutate(
+		hp_rank = ordered(hp_rank),
+		color = hp_rank == 3
+	) %>%
+	ggplot(aes(x = hp_rank, y = value, fill = color)) +
 	geom_boxplot() +
 	facet_wrap(~variable, scales='free_y') +
-	labs(x = 'Model', y = 'Value')
+	scale_fill_manual(values = c('white', 'dodgerblue')) +
+	labs(x = 'Model', y = 'Value') 
 
 # hp_rank == 3 is our best model
 Metrics %>%
@@ -53,7 +69,7 @@ Metrics %>%
 	arrange(median_log_loss) %>%
 	head
 
-# History
+# Find the optimal number of epochs in the history
 MungedTraining <-
 	History %>%
 	filter(hp_rank == 3L) %>%

@@ -1,70 +1,78 @@
 library(tidyverse)
-# library(jsonlite)
 library(skimr)
 
-fn_in <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/gb_ray_tune/grid_search.csv'
-Grid <- read_csv(fn_in)
-Grid %>%
-	mutate(date_time = lubridate::as_datetime(date)) %>%
-	select(date_time, auc, binary_logloss) %>%
-	gather(metric, value, -date_time) %>%
-	ggplot(aes(x = date_time, y = value)) +
-	geom_point() +
-	geom_smooth() +
-	facet_wrap(~metric, scales='free')
+data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
 
-Grid %>%
-	arrange(binary_logloss, desc(auc)) %>%
-	head(5) %>%
-	select(starts_with('config')) %>%
-	as.data.frame
-# End here
+# Load data
+fn_cv <- file.path(data_dir, '/working_data/model_a/model_a_training/gb_ray_tune/model_a_ann_hp_search_2_cv.csv')
+fn_hp <- file.path(data_dir, '/working_data/model_a/model_a_training/gb_ray_tune/model_a_ann_hp_search.csv')
+CV <- read_csv(fn_cv, col_types = cols('hp_rank' = 'i', 'fold' = 'i'))
+HP <- read_csv(fn_hp)
 
-dir_hp <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/gb_ray_tune/' 
-list_dirs <- list.dirs(dir_hp, recursive = FALSE, full.names = TRUE)
+# Overall view
+MeanLogLoss <-
+	CV %>%
+	group_by(hp_rank) %>%
+	summarize(mean_log_loss = mean(log_loss)) %>%
+	ungroup %>%
+	mutate(
+		rank = rank(mean_log_loss)
+	) %>%
+	arrange(rank)
 
-dir_out <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/gb_ray_tune'
-fn_out <- file.path(dir_out, 'model_a_lightgbm_hyperparameters_result.csv')
+MedianLogLoss <-
+	CV %>%
+	group_by(hp_rank) %>%
+	summarize(median_log_loss = median(log_loss)) %>%
+	ungroup %>%
+	mutate(
+		rank = rank(median_log_loss)
+	) %>%
+	arrange(rank)
+MeanLogLoss %>% head
+MedianLogLoss %>% head
 
-AllJoinedResults <- tibble()
-for (i in seq(1, length(list_dirs))){
-	fn_result_json <- file.path(list_dirs[i], 'result.json')
-	fn_params_json <- file.path(list_dirs[i], 'params.json')
-	Result <- jsonlite::fromJSON(fn_result_json)
-	Params <- jsonlite::fromJSON(fn_params_json)
-	
-	ResultFormatted <-
-		tribble(
-			~trial_id, ~binary_logloss, ~auc,
-			Result$trial_id, Result$binary_logloss, Result$auc,
-		)
-	
-	# ParamFormatted <-
-	# 	Params %>%
-	# 		enframe(name = 'param') %>%
-	# 		filter(param %in% c('learning_rate', 'min_data_in_leaf', 'num_iterations')) %>%
-	# 		unnest(value)
-	ParamFormatted <-
-		tribble(
-			~learning_rate, ~min_data_in_leaf, ~num_iterations,
-			Params$learning_rate, Params$min_data_in_leaf, Params$num_iterations,
-		)
-	
-	JoinedResults <-
-		ResultFormatted %>%
-		bind_cols(ParamFormatted)
-	AllJoinedResults <- AllJoinedResults %>% bind_rows(JoinedResults)
-}
+# 5 and 8 look like the best candidates
+CV %>% 
+	group_by(hp_rank) %>%
+	summarize(
+		mean_log_loss = mean(log_loss),
+		median_log_loss = median(log_loss)
+	) %>%
+	ungroup %>%
+	ggplot(aes(x = mean_log_loss, y = median_log_loss)) +
+	geom_label(aes(label = hp_rank))
 
-RankedResults <-
-	AllJoinedResults %>%
-	arrange(binary_logloss, desc(auc)) %>%
-	rowid_to_column('rank') 
+#
 
-# Winning model:
-RankedResults %>%
-	head(1) %>%
-	select(-trial_id)
 
-RankedResults %>%
-	write_csv(fn_out)
+
+CV %>%
+	select(-fold) %>%
+	gather(variable, value, -hp_rank) %>%
+	mutate(
+		hp_rank = ordered(hp_rank),
+		color = hp_rank %in% c(5, 8)
+		) %>%
+	ggplot(aes(x = hp_rank, y = value, fill = color)) +
+	geom_boxplot() +
+	facet_wrap(~variable, scales = 'free') +
+	scale_fill_manual(values = c('white', 'dodgerblue')) +
+	theme(legend.position = 'none')
+
+# I like model n.8, due to the low level of variance in its scores.
+# Interestingly, models 5 and 8 are VERY similar.
+HP %>%
+	filter(rank %in% c(5, 8)) %>%
+	select(rank, starts_with('config')) %>%
+	rename_all(str_replace, 'config/', '')
+
+HP %>%
+	filter(rank == 8) %>%
+	select(rank, starts_with('config')) %>%
+	rename_all(str_replace, 'config/', '')
+
+# Conclusion:
+# num_trees = 482
+# learning_rate = 0.0134
+# min_data_in_leaf = 85
