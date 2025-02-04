@@ -46,6 +46,21 @@ CV %>%
 	facet_wrap(~variable, scales = 'free') +
 	scale_color_manual(values = c('darkgrey', 'dodgerblue'))
 
+# Accuracy, precision, recall
+CV %>%
+	select(hp_rank, accuracy, precision, recall) %>%
+	gather(variable, value, -hp_rank) %>%
+	group_by(hp_rank, variable) %>%
+	summarize(
+		mean = mean(value),
+		median = median(value)
+	) %>%
+	ungroup %>%
+	ggplot(aes(x = mean, y = median, label = hp_rank)) +
+	# geom_point() +
+	geom_text() +
+	facet_wrap(~variable, scales = 'free', ncol = 1)
+
 # Go with rank == 3. rank == 2 is very similar, but with more
 # variance in its metrics.
 # HP %>%
