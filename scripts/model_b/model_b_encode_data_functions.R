@@ -222,6 +222,7 @@ get_recipe_fit_training <- function(PreppedCombo){
 
 get_recipe_fit_tranches <- function(PreppedCombo){
 	recipe( ~ ., data = PreppedCombo) %>%
+	# step_zv() %>%
 	# Factors
 	step_dummy(all_factor_predictors(), one_hot = TRUE) %>%
 	# Logicals

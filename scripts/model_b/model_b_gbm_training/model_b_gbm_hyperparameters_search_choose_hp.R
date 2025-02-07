@@ -1,9 +1,12 @@
 library(tidyverse)
 
-fn_cv <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_b/model_b_training/gb_ray_tune/model_b_ann_hp_search_2_cv.csv'
+
+data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
+
+fn_cv <- file.path(data_dir, 'working_data/model_b/model_b_training/gb_ray_tune/model_b_ann_hp_search_2_cv.csv')
 CV <- read_csv(fn_cv, col_types = cols('hp_rank' = 'i', 'fold' = 'i'))
 
-fn_hp <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_b/model_b_training/gb_ray_tune/model_b_ann_hp_search.csv' 
+fn_hp <- file.path(data_dir, 'working_data/model_b/model_b_training/gb_ray_tune/model_b_ann_hp_search.csv')
 HP <- read_csv(fn_hp)
 
 CV %>%
