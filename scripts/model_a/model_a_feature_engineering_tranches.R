@@ -56,7 +56,6 @@ FN <-
 		fn_comparable_metrics = file.path(dir_comparable_metrics, fn_comparable_metrics)
 	)
 
-i <- 1L
 for (i in FN$i){
 	print(i)
 	TrancheJoinedData <- read_parquet(FN$fn_comparable_metrics[i])
