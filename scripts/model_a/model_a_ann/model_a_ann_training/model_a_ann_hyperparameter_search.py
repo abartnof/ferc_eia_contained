@@ -85,7 +85,7 @@ def fit_mod(space):
     fold_range = np.arange(5)
     fold_variable = np.random.choice(fold_range, 1)[0]
     # fold_variable = 1
-    is_train_mask = (ID['fold_num'] != fold_variable).values
+    is_train_mask = (ID['fold'] != fold_variable).values
     
     XTrain = X.loc[is_train_mask]
     XVal = X.loc[~is_train_mask]

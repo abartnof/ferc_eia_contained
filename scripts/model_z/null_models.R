@@ -7,18 +7,24 @@ data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
 
 fn_y_fit_model_a <- file.path(data_dir, 'working_data/model_z/y_fit_model_a.parquet')
 fn_y_fit_model_b <- file.path(data_dir, 'working_data/model_z/y_fit_model_b.parquet')
-# fn_matches <- file.path(data_dir, '/working_data/positive_matches.RDS')
 fn_combos <- file.path(data_dir, '/working_data/matches_and_mismatches.parquet')
+fn_ferc_to_fold <- file.path(data_dir, '/working_data/ferc_to_fold.parquet')
 
 YFitModelA <- read_parquet(fn_y_fit_model_a)
 YFitModelB <- read_parquet(fn_y_fit_model_b)
 Combos <- read_parquet(fn_combos) %>%
 	select(record_id_ferc1, record_id_eia, is_match)
+FercToFold <- read_parquet(fn_ferc_to_fold)
 
-# Unfortunately, model A and model B define splits differently, 
-# so they can't be combined
+YFit <-
+	YFitModelA %>%
+	select(record_id_ferc1, record_id_eia, y_fit_a_ann, y_fit_a_gbm) %>%
+	left_join(YFitModelB, by = join_by(record_id_ferc1, record_id_eia)) %>%
+	relocate(record_id_ferc1, record_id_eia, fold)
 
-
+YFitLong <-
+	YFit %>%
+	pivot_longer(cols = starts_with('y_fit'), names_to = 'model', values_to = 'y_fit', names_prefix = 'y_fit_')
 # Matches <- readRDS(fn_matches) %>%
 # 	select(record_id_ferc1, record_id_eia)
 
@@ -31,10 +37,10 @@ Combos <- read_parquet(fn_combos) %>%
 CteModalCandidates <-
 	YFitLong %>%
 	drop_na(y_fit) %>%
-	group_by(fold_num, model, record_id_ferc1) %>%
+	group_by(fold, model, record_id_ferc1) %>%
 	slice_max(y_fit, na_rm = TRUE, with_ties = TRUE) %>%  # all 'top' suggestions, per model x fold
 	ungroup %>%
-	group_by(fold_num, record_id_ferc1, record_id_eia) %>%
+	group_by(fold, record_id_ferc1, record_id_eia) %>%
 	summarize(
 		num_votes = n(),
 		max_y_fit = max(y_fit)
@@ -43,15 +49,11 @@ CteModalCandidates <-
 
 Mappings1 <-
 	CteModalCandidates %>%
-	group_by(fold_num, record_id_ferc1) %>%
+	group_by(fold, record_id_ferc1) %>%
 	slice_max(order_by = tibble(num_votes, max_y_fit), n = 1, with_ties = FALSE) %>%
 	ungroup %>%
-	select(fold_num, record_id_ferc1, record_id_eia) %>%
+	select(fold, record_id_ferc1, record_id_eia) %>%
 	mutate(is_fit = TRUE)
-
-Combos
-YFitLong %>%
-	distinct(record_id_ferc1, record_id_eia, fold_num)
 #
 
 

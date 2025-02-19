@@ -92,7 +92,7 @@ for (hp_rank, fold) in tqdm(list(itertools.product(*variables))):
     
     space = param_dict[hp_rank]
     # Split data into training and validation
-    is_train_mask = (ID['fold_num'] != fold).values
+    is_train_mask = (ID['fold'] != fold).values
     
     XTrain = X.loc[is_train_mask]
     XVal = X.loc[~is_train_mask]
