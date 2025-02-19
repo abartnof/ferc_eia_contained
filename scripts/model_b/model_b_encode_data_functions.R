@@ -47,6 +47,8 @@ dir_tranches <- file.path(data_dir, 'working_data/tranches_ferc_to_eia')
 fn_training_x <- file.path(dir_working, '/model_b_training/x.parquet')
 fn_training_y <- file.path(dir_working, '/model_b_training/y.parquet')
 fn_training_id <- file.path(dir_working, '/model_b_training/id.parquet')
+fn_ferc_to_fold <- file.path(data_dir, '/working_data/ferc_to_fold.parquet')
+
 
 # Combo <- read_parquet(fn_combo)
 # FercSteam <- readRDS(fn_ferc_steam)
@@ -60,16 +62,6 @@ fn_training_id <- file.path(dir_working, '/model_b_training/id.parquet')
 # ProductUtilityNameLvDistance <- read_parquet(fn_utility_name_lv_distance)
 
 #### Define Functions ####
-# Context tables from FERC and EIA records
-get_ferc_to_fold <- function(FercData){
-	# Create a mapping from record_id_ferc1 to folds
-	unique_ferc_ids <- unique(FercData$record_id_ferc1)
-	fold_range <- c(0L, 1L, 2L, 3L, 4L)
-	fold_vector <- sample(x = fold_range, size = length(unique_ferc_ids), replace = TRUE)
-	FercToFold <-
-		tibble(record_id_ferc1 = unique_ferc_ids, fold_num = fold_vector)
-	return(FercToFold)
-}
 
 get_ferc_context <- function(FercSteam, FercUtility){
 	FercSteam %>%
@@ -232,53 +224,3 @@ get_recipe_fit_tranches <- function(PreppedCombo){
 	step_mutate_at(all_predictors(), fn = ~replace_na(., 0.0)) %>%
 	prep
 }
-
-#### Call Functions ####
-# FercContext <- get_ferc_context(FercSteam, FercUtility)
-# EiaContext <- get_eia_context(EiaPlantParts)
-# PreppedCombo <- get_prepped_combo(
-# 		Combo, 
-# 		FercContext, 
-# 		EiaContext, 
-# 		ProductRecordIdFerc1ToIs100Percent, 
-# 		ProductPlantNameFerc1ToToken,
-# 		ProductPlantNameLvDistance,
-# 		ProductUtilityNameLvDistance
-# )
-# recipe_fit_training <- get_recipe_fit_training(PreppedCombo)
-
-
-
-
-
-# summary(recipe_fit) %>%
-# 	print(n = Inf)
-
-#### Iterate here! ####
-# Run through each cartesian product of FERC:EIA comparison,
-# encode them, and save them to disk for the model.
-
-# dir_combo <- '/Volumes/Extreme SSD/rematch1_predictor/entire_dataset_cartesian_product_of_ferc_and_eia_ids/'
-# dir_encoded_data <- '/Volumes/Extreme SSD/rematch1_predictor/model_generator_id/encoded_data/'
-
-# Note the input files, and the output files, for this data transformation
-# loop.
-# Fn <-
-# 	list.files(dir_combo, full.names = TRUE) %>%
-# 	enframe(name = NULL, value = 'cartesian_product_fn') %>%
-# 	mutate(
-# 		combo = str_extract(cartesian_product_fn, '\\d{4}_\\d+'),
-# 		encoded_data_fn = str_c(dir_encoded_data, 'generator_id_encoded_data__', combo, '.parquet')) %>%
-# 	relocate(combo)
-
-
-# Loop through cartesian products of FERC:EIA comparisons, process them
-# for (i in seq(1L, nrow(Fn))){
-# 	print(i)
-# 	fn_combo <- Fn$cartesian_product_fn[[i]]
-# 	fn_encoded_data <- Fn$encoded_data_fn[[i]]
-# 	Combo <- read_parquet(fn_combo)
-# 	PreppedCombo <- prep_combo(Combo)
-# 	EncodedData <- bake(object = recipe_fit, new_data = PreppedCombo)
-# 	write_parquet(EncodedData, fn_encoded_data)
-# }

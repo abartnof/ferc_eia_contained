@@ -36,6 +36,8 @@ fn_ferc_steam <- file.path(dir_input, 'ferc_steam.RDS')
 fn_positive_matches <- file.path(dir_working, 'positive_matches.RDS')
 fn_matches_and_mismatches <- file.path(dir_working, 'matches_and_mismatches.parquet')
 
+fn_ferc_to_fold <- file.path(dir_working, 'ferc_to_fold.parquet')
+
 NUM_COMPARISONS <- 1000L
 
 EiaPlantParts <- readRDS(fn_eia_plant_parts) %>%
@@ -117,3 +119,22 @@ PositiveMatches %>%
 	bind_rows(RandomCombos) %>%
 	arrange(report_year, record_id_ferc1, is_match) %>%
 	write_parquet(fn_matches_and_mismatches)
+
+
+# Create a consistent mapping, 
+# linking each FERC record id to a fold 
+
+DistinctRecordIDFerc1 <-
+	FercSteam %>%
+		distinct(record_id_ferc1) %>%
+		collect
+
+fold_vector <- sample(
+	x = seq(0, 4), 
+	replace = TRUE, 
+	size = nrow(DistinctRecordIDFerc1)
+)
+
+DistinctRecordIDFerc1 %>%
+	bind_cols(fold = fold_vector) %>%
+	write_parquet(fn_ferc_to_fold)

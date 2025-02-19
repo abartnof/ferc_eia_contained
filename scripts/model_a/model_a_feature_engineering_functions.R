@@ -25,32 +25,6 @@ library(rsample)
 library(arrow)
 set.seed(1)
 
-# data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
-# dir_input <- file.path(data_dir, '/input_data/')
-# dir_working <- file.path(data_dir, '/working_data/')
-# dir_working_model_a_training <- file.path(
-# 	data_dir, 
-# 	'/working_data/model_a/model_a_training/'
-# )
-# 
-# fn_all_joined_data <- file.path(dir_working_model_a_training, 'all_joined_data.parquet')
-# fn_id <- file.path(dir_working_model_a_training, 'id.parquet')
-# fn_y <- file.path(dir_working_model_a_training, 'y.parquet')
-# fn_x <- file.path(dir_working_model_a_training, 'x.parquet')
-# 
-# JoinedData <- read_parquet(fn_all_joined_data)
-
-
-#### Training data only: assign a fold num to each record_id_ferc1 ####
-get_ferc_to_fold <- function(JoinedData){
-	unique_ferc_ids <- unique(JoinedData$record_id_ferc1)
-	fold_range <- c(0L, 1L, 2L, 3L, 4L)
-	fold_vector <- sample(x = fold_range, size = length(unique_ferc_ids), replace = TRUE)
-	FercToFold <-
-		tibble(record_id_ferc1 = unique_ferc_ids, fold_num = fold_vector)
-	return(FercToFold)
-}
-
 #### Export non-predictor variables ####
 get_id <- function(JoinedData){
 	JoinedData %>%
@@ -118,19 +92,3 @@ get_recipe_fit_tranches <- function(PredictorsFactored){
 	step_mutate_at(all_numeric_predictors(), fn = ~replace_na(., 0.0)) %>%
 	prep
 }
-
-
-# # Script (Training Data version)
-# get_id(JoinedData) %>%
-# left_join(FercToFold, by = 'record_id_ferc1') %>%
-# write_parquet(fn_id)
-# 
-# get_y(JoinedData) %>%
-# 	write_parquet(fn_y)
-# 
-# Predictors <- get_predictors(JoinedData)
-# PredictorsFactored <- collapse_factors(Predictors)
-# recipe_fit <- get_recipe_fit(PredictorsFactored)
-# 
-# bake(recipe_fit, PredictorsFactored) %>%
-# 	write_parquet(fn_x)

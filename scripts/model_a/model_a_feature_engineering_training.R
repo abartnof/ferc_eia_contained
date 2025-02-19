@@ -23,12 +23,14 @@ fn_all_joined_data <- file.path(dir_working_model_a_training, 'all_joined_data.p
 fn_id <- file.path(dir_working_model_a_training, 'id.parquet')
 fn_y <- file.path(dir_working_model_a_training, 'y.parquet')
 fn_x <- file.path(dir_working_model_a_training, 'x.parquet')
+fn_ferc_to_fold <- file.path(dir_working, 'ferc_to_fold.parquet')
+
 
 JoinedData <- read_parquet(fn_all_joined_data)
 
 #### Script (Training Data version) ####
 # Training data only: assign a fold num to each record_id_ferc1 #
-FercToFold <- get_ferc_to_fold(JoinedData)
+FercToFold <- read_parquet(fn_ferc_to_fold)
 
 # Export non-predictor variables
 get_id(JoinedData) %>%
