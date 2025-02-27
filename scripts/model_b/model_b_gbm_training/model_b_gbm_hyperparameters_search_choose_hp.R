@@ -1,4 +1,6 @@
 library(tidyverse)
+library(skimr)
+library(car)
 
 
 data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
@@ -9,6 +11,10 @@ CV <- read_csv(fn_cv, col_types = cols('hp_rank' = 'i', 'fold' = 'i'))
 fn_hp <- file.path(data_dir, 'working_data/model_b/model_b_training/gb_ray_tune/model_b_ann_hp_search.csv')
 HP <- read_csv(fn_hp)
 
+fn_model_b_gbm_hp <- file.path(data_dir, '/working_data/model_b/model_b_training/fn_model_b_gbm_hp.csv')
+
+
+# Look at 3, 2, 0, 1
 CV %>%
 	group_by(hp_rank) %>%
 	summarize(
@@ -19,17 +25,27 @@ CV %>%
 	ggplot(aes(x = median_log_loss, y = mean_log_loss, label = hp_rank)) +
 	geom_text()
 
+CV %>%
+	group_by(hp_rank) %>%
+	summarize(
+		median_log_loss = median(log_loss),
+	) %>%
+	ungroup %>%
+	arrange(median_log_loss) %>%
+	head
+
 
 CV %>%
 	gather(variable, value, -hp_rank, -fold) %>%
 	mutate(
 		hp_rank = factor(hp_rank),
-		color = hp_rank == 3L
+		color = hp_rank %in% seq(0, 3)
 		) %>%
 	ggplot(aes(x = hp_rank, y = value, fill = color)) +
 	geom_boxplot() +
 	facet_wrap(~variable, scales = 'free')
 
+# We'll go with model 3-- similar to 2, but with less variance
 CV %>%
 	gather(variable, value, -hp_rank, -fold) %>%
 	group_by(hp_rank, variable) %>%
@@ -40,7 +56,7 @@ CV %>%
 	) %>%
 	ungroup %>%
 	mutate(
-		color = hp_rank == 3L,
+		color = hp_rank %in% seq(0, 3),
 		hp_rank = ordered(hp_rank)
 	) %>%
 	ggplot(aes(x = hp_rank, color = color)) +
@@ -49,37 +65,21 @@ CV %>%
 	facet_wrap(~variable, scales = 'free') +
 	scale_color_manual(values = c('darkgrey', 'dodgerblue'))
 
-# Accuracy, precision, recall
-CV %>%
-	select(hp_rank, accuracy, precision, recall) %>%
-	gather(variable, value, -hp_rank) %>%
-	group_by(hp_rank, variable) %>%
-	summarize(
-		mean = mean(value),
-		median = median(value)
-	) %>%
-	ungroup %>%
-	ggplot(aes(x = mean, y = median, label = hp_rank)) +
-	# geom_point() +
-	geom_text() +
-	facet_wrap(~variable, scales = 'free', ncol = 1)
-
-# Go with rank == 3. rank == 2 is very similar, but with more
-# variance in its metrics.
-# HP %>%
-# 	filter(rank == 2) %>%
-# 	select(starts_with('config')) %>%
-# 	rename_all(str_replace, 'config/', '') 
-
+# All of the top-performing models are very similar
 HP %>%
-	filter(rank == 3) %>%
-	select(starts_with('config')) %>%
+	filter(rank %in% seq(0, 3)) %>%
+	select(rank, starts_with('config')) %>%
 	rename_all(str_replace, 'config/', '') 
 
-# num_trees:266
-# learning_rate:0.0105
-# min_data_in_leaf:42
-# verbose:-1
-# objective:'binary'
-# early_stopping_round:-1
-# metrics:'binary_logloss', 'auc'
+HP %>%
+	select(starts_with('config')) %>%
+	rename_all(str_replace, 'config/', '') %>%
+	select(num_trees, learning_rate, min_data_in_leaf) %>%
+	car::scatterplotMatrix()
+
+HP %>%
+	filter(rank == 3L) %>%
+	select(rank, starts_with('config')) %>%
+	rename_all(str_replace, 'config/', '')  %>%
+	select(verbose, num_trees, learning_rate, min_data_in_leaf, objective, early_stopping_round, metrics) %>%
+	write_csv(fn_model_b_gbm_hp)

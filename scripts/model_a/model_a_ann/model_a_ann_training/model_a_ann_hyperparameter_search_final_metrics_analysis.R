@@ -1,5 +1,6 @@
 library(tidyverse)
 library(skimr)
+library(car)
 
 data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
 dir_model_a_training_ann <- file.path(data_dir, '/working_data/model_a/model_a_training/ann_ray_tune/')
@@ -17,6 +18,11 @@ fn_history <- file.path(
 fn_hp <- file.path(
 	dir_model_a_training_ann, 
 	'model_a_ann_hp_search.csv'
+)
+
+fn_model_a_ann_hp <- file.path(
+	data_dir, 
+	'/working_data/model_a/model_a_training/model_a_ann_hp.csv'
 )
 
 
@@ -133,5 +139,12 @@ mean(PlotMePoints$target_epoch)
 HP %>% 
 	filter(rank == 3L) %>%
 	select(starts_with('config')) %>%
-	rename_all(str_replace, 'config/', '')
+	rename_all(str_replace, 'config/', '') %>%
+	mutate(epochs = 20) %>%
+	write_csv(fn_model_a_ann_hp)
 
+# Model 3 is right in the middle of the optimizer's targets
+HP %>%
+	select(starts_with('config')) %>%
+	rename_all(str_replace, 'config/', '') %>%
+	scatterplotMatrix()

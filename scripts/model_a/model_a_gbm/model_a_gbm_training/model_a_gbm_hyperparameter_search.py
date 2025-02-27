@@ -14,7 +14,7 @@ from ray import train, tune
 from ray.tune.search.optuna import OptunaSearch
 # from ray.tune.schedulers import ASHAScheduler
 from ray.tune.search import ConcurrencyLimiter
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 # from optuna.samplers import TPESampler
 
@@ -23,22 +23,22 @@ from sklearn.preprocessing import StandardScaler
 
 
 data_dir = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
-dir_working_model_b_training = os.path.join(data_dir, 'working_data/model_b/model_b_training')
-dir_working_model_b_training
+dir_working_model_a_training = os.path.join(data_dir, 'working_data/model_a/model_a_training')
+dir_working_model_a_training
 
 
 # In[3]:
 
 
-fn_x = os.path.join(dir_working_model_b_training, 'x.parquet')
-fn_y = os.path.join(dir_working_model_b_training, 'y.parquet')
-fn_id = os.path.join(dir_working_model_b_training, 'id.parquet')
+fn_x = os.path.join(dir_working_model_a_training, 'x.parquet')
+fn_y = os.path.join(dir_working_model_a_training, 'y.parquet')
+fn_id = os.path.join(dir_working_model_a_training, 'id.parquet')
 
-dir_hyperparameters = dir_working_model_b_training
-fn_out = os.path.join(dir_working_model_b_training, 'gb_ray_tune/model_b_ann_hp_search.csv')
+dir_hyperparameters = dir_working_model_a_training
+fn_out = os.path.join(dir_working_model_a_training, 'gb_ray_tune/model_a_ann_hp_search.csv')
 
-# dir_hyperparameters = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_b/train'
-# fn_out = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_b/train/gb_ray_tune/grid_search.csv'
+# dir_hyperparameters = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train'
+# fn_out = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/gb_ray_tune/grid_search.csv'
 
 
 # In[4]:
@@ -82,8 +82,8 @@ def fit_mod(space):
     train_set = lgb.Dataset(XTrain, Y.loc[is_train_mask])
     test_set  = lgb.Dataset(XTest,  Y.loc[~is_train_mask])
 
-    # Model
     evals={}
+    # Model
     gbm = lgb.train(
         space,
         train_set,
@@ -92,7 +92,6 @@ def fit_mod(space):
     )
     binary_logloss = evals['valid_0']['binary_logloss'][-1]
     auc = evals['valid_0']['auc'][-1]
-    
     train.report(
         {
             "binary_logloss": binary_logloss,
@@ -101,23 +100,21 @@ def fit_mod(space):
     )
 
 
-# In[6]:
+# In[18]:
 
 
 space = {
-    # 'num_iterations': tune.randint(1, 1000),
     'verbose':-1,
     'num_trees': tune.randint(1, 1000),
     'learning_rate': tune.uniform(0.0001, 0.75),
     'min_data_in_leaf': tune.randint(1, 200),
     'objective':'binary', 
-    # 'early_stopping_round':2,
     'early_stopping_round':-1,
     'metrics':['binary_logloss', 'auc']
     }
 
 
-# In[7]:
+# In[19]:
 
 
 # asha = ASHAScheduler(metric='binary_logloss', mode='min')
@@ -126,7 +123,7 @@ search_alg = OptunaSearch(metric="binary_logloss", mode="min")
 search_alg = ConcurrencyLimiter(search_alg, max_concurrent=1)
 
 
-# In[ ]:
+# In[20]:
 
 
 tuner = tune.Tuner(
@@ -145,13 +142,13 @@ tuner = tune.Tuner(
 results = tuner.fit()
 
 
-# In[ ]:
+# In[21]:
 
 
 Grid = results.get_dataframe().copy()
 
 
-# In[ ]:
+# In[22]:
 
 
 Grid.index.name = 'order'
@@ -160,28 +157,28 @@ RankedGrid.index.name = 'rank'
 RankedGrid.to_csv(fn_out)
 
 
-# In[ ]:
+# In[25]:
 
 
-RankedGrid.sort_values('binary_logloss').head(10)[['binary_logloss', 'auc', 'config/num_trees', 'config/learning_rate', 'config/min_data_in_leaf']]
+RankedGrid.sort_values('binary_logloss').head(20)[['binary_logloss', 'auc', 'config/num_trees', 'config/learning_rate', 'config/min_data_in_leaf']]
 
 
-# In[ ]:
+# In[12]:
 
 
 # experiment_path = "/Users/andrewbartnof/Documents/rmi/rematch_ferc_eia1/clean_data/model_full_gradient_boost/ray_tune/gb_ray_tune"
 # restored_tuner = tune.Tuner.restore(experiment_path, trainable=fit_mod)
 
 
-# In[ ]:
+# In[13]:
 
 
 # fn_results = '/Users/andrewbartnof/Documents/rmi/rematch_ferc_eia1/clean_data/model_full_gradient_boost/ray_tune/ray_tune_dataframe.csv'
 # restored_tuner.get_results().get_dataframe().to_csv(fn_results)
 
 
-# In[ ]:
+# In[14]:
 
 
-# !jupyter nbconvert --to script model_b_gbm_hyperparameter_search.ipynb
+# !jupyter nbconvert --to script model_a_hyperparameter_search.ipynb
 

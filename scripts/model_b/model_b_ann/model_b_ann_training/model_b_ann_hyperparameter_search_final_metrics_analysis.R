@@ -1,5 +1,6 @@
 library(tidyverse)
 library(skimr)
+library(car)
 
 data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
 dir_model_b_training_ann <- file.path(data_dir, '/working_data/model_b/model_b_training/ann_ray_tune/')
@@ -18,6 +19,12 @@ fn_hp <- file.path(
 	dir_model_b_training_ann, 
 	'model_b_ann_hp_search.csv'
 )
+
+fn_model_b_ann_hp <- file.path(
+	data_dir, 
+	'/working_data/model_b/model_b_training/model_b_ann_hp.csv'
+)
+
 
 
 Metrics <- read_csv(fn_metrics, col_types = cols('hp_rank' = 'i', 'fold' = 'i'))
@@ -139,5 +146,11 @@ mean(PlotMePoints$target_epoch)
 HP %>% 
 	filter(rank == 7L) %>%
 	select(starts_with('config')) %>%
-	rename_all(str_replace, 'config/', '')
+	rename_all(str_replace, 'config/', '') %>%
+	mutate(epochs = 14L) %>%
+	write_csv(fn_model_b_ann_hp)
 
+HP %>%
+	select(starts_with('config')) %>%
+	rename_all(str_replace, 'config/', '') %>%
+	scatterplotMatrix()
