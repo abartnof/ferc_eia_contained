@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[6]:
+# In[1]:
 
 
 import lightgbm as lgb
@@ -12,7 +12,7 @@ import os
 from sklearn.preprocessing import StandardScaler
 
 
-# In[7]:
+# In[2]:
 
 
 data_dir = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
@@ -20,7 +20,7 @@ dir_working_model_b_training = os.path.join(data_dir, 'working_data/model_b/mode
 dir_working_model_b_training
 
 
-# In[8]:
+# In[3]:
 
 
 fn_x = os.path.join(dir_working_model_b_training, 'x.parquet')
@@ -31,7 +31,7 @@ fn_model = os.path.join(dir_working_model_b_training, 'model_b_gbm.txt')
 # fn_out = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_b/train/gb_ray_tune/grid_search.csv'
 
 
-# In[9]:
+# In[4]:
 
 
 def np_cleaning(X):
@@ -40,20 +40,31 @@ def np_cleaning(X):
     return X
 
 
+# In[6]:
+
+
+fn_params = os.path.join(dir_working_model_b_training, 'model_b_gbm_hp.csv')
+params = pd.read_csv(fn_params).to_dict(orient='list')
+params = {k:params[k][0] for k in params.keys()}
+
+params['metrics'] = ['binary_logloss', 'auc']
+print(params)
+
+
 # In[10]:
 
 
-param_dict = {
-    'num_trees':266,
-    'learning_rate':0.0105,
-    'min_data_in_leaf':42,
-    'objective':'binary',
-    'early_stopping_round':-1,
-    'metrics':['binary_logloss', 'auc']
-}
+# param_dict = {
+#     'num_trees':266,
+#     'learning_rate':0.0105,
+#     'min_data_in_leaf':42,
+#     'objective':'binary',
+#     'early_stopping_round':-1,
+#     'metrics':['binary_logloss', 'auc']
+# }
 
 
-# In[11]:
+# In[7]:
 
 
 X = pd.read_parquet(fn_x)
@@ -61,7 +72,7 @@ Y = pd.read_parquet(fn_y)
 ID = pd.read_parquet(fn_id)
 
 
-# In[ ]:
+# In[8]:
 
 
 # This is all done automagically by the R script that creates the new data tranches.
@@ -77,7 +88,7 @@ XClean = np_cleaning(XClean)
 
 train_set = lgb.Dataset(XClean, Y)
 gbm = lgb.train(
-        params = param_dict,
+        params = params,
         train_set=train_set   
     )
 
@@ -96,8 +107,8 @@ gbm.save_model(fn_model)
 #              'name':X.columns}).plot.barh(x='name', y='importance', figsize=[8, 10])
 
 
-# In[42]:
+# In[ ]:
 
 
-# !jupyter nbconvert --to script model_b_gbm_fit.ipynb
+get_ipython().system('jupyter nbconvert --to script model_b_gbm_fit.ipynb')
 

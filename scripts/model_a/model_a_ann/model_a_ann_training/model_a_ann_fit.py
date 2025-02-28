@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 import pandas as pd
@@ -17,7 +17,7 @@ from sklearn.preprocessing import StandardScaler
 # utils.set_random_seed(1)
 
 
-# In[2]:
+# In[3]:
 
 
 data_dir = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
@@ -25,7 +25,7 @@ dir_working_model_a_training = os.path.join(data_dir, 'working_data/model_a/mode
 dir_working_model_a_training
 
 
-# In[20]:
+# In[4]:
 
 
 fn_x = os.path.join(dir_working_model_a_training, 'x.parquet')
@@ -35,7 +35,16 @@ fn_id = os.path.join(dir_working_model_a_training, 'id.parquet')
 fn_model = os.path.join(dir_working_model_a_training, 'model_a_ann.keras')
 
 
-# In[4]:
+# In[20]:
+
+
+fn_params = os.path.join(dir_working_model_a_training, 'model_a_ann_hp.csv')
+params = pd.read_csv(fn_params).to_dict(orient='list')
+params = {k:params[k][0] for k in params.keys()}
+print(params)
+
+
+# In[23]:
 
 
 def np_cleaning(X):
@@ -44,19 +53,7 @@ def np_cleaning(X):
     return X
 
 
-# In[10]:
-
-
-params = {
-    'dropout_1': 0.000120,
-    'dropout_2': 0.0633,
-    'relu_1': 33,
-    'relu_2': 20,
-    'epochs': 20
-}
-
-
-# In[6]:
+# In[24]:
 
 
 X = pd.read_parquet(fn_x)
@@ -64,7 +61,7 @@ Y = pd.read_parquet(fn_y)
 ID = pd.read_parquet(fn_id)
 
 
-# In[7]:
+# In[25]:
 
 
 # This is all done automagically by the R script that creates the new data tranches.
@@ -76,15 +73,15 @@ XClean = np_cleaning(XClean)
 XClean = convert_to_tensor(XClean)
 
 
-# In[11]:
+# In[ ]:
 
 
 clear_session()
 model = models.Sequential()
 model.add(layers.Dropout(rate=params["dropout_1"]))
-model.add(layers.Dense(units=params["relu_1"], activation='relu'))    
+model.add(layers.Dense(units=int(params["relu_1"]), activation='relu'))    
 model.add(layers.Dropout(rate=params["dropout_2"]))
-model.add(layers.Dense(units=params["relu_2"], activation='relu'))   
+model.add(layers.Dense(units=int(params["relu_2"]), activation='relu'))   
 model.add(layers.Dense(1, activation='sigmoid'))
 
 model.compile(
@@ -97,9 +94,19 @@ model.compile(
 )
     
 history = model.fit(
-    XClean, Y, epochs=params['epochs'], batch_size=128,  # hard-coded here
+    XClean, Y, epochs=int(params['epochs']), batch_size=128,  # hard-coded here
     verbose=1
 )
 
 
-# model
+# In[ ]:
+
+
+model.save(fn_model)
+
+
+# In[ ]:
+
+
+get_ipython().system('jupyter nbconvert --to script model_a_ann_fit.ipynb')
+

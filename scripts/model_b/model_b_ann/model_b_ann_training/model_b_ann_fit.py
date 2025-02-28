@@ -44,19 +44,30 @@ def np_cleaning(X):
     return X
 
 
+# In[6]:
+
+
+fn_params = os.path.join(dir_working_model_b_training, 'model_b_ann_hp.csv')
+params = pd.read_csv(fn_params).to_dict(orient='list')
+params = {k:params[k][0] for k in params.keys()}
+
+# params['metrics'] = ['binary_logloss', 'auc']
+print(params)
+
+
 # In[5]:
 
 
-params = {
-    'dropout_1': 0.0177,
-    'dropout_2': 0.00595,
-    'relu_1': 56,
-    'relu_2': 29,
-    'epochs': 14
-}
+# params = {
+#     'dropout_1': 0.0177,
+#     'dropout_2': 0.00595,
+#     'relu_1': 56,
+#     'relu_2': 29,
+#     'epochs': 14
+# }
 
 
-# In[6]:
+# In[7]:
 
 
 X = pd.read_parquet(fn_x)
@@ -64,7 +75,7 @@ Y = pd.read_parquet(fn_y)
 ID = pd.read_parquet(fn_id)
 
 
-# In[7]:
+# In[8]:
 
 
 # This is all done automagically by the R script that creates the new data tranches.
@@ -76,15 +87,15 @@ XClean = np_cleaning(XClean)
 XClean = convert_to_tensor(XClean)
 
 
-# In[8]:
+# In[ ]:
 
 
 clear_session()
 model = models.Sequential()
 model.add(layers.Dropout(rate=params["dropout_1"]))
-model.add(layers.Dense(units=params["relu_1"], activation='relu'))    
+model.add(layers.Dense(units=int(params["relu_1"]), activation='relu'))    
 model.add(layers.Dropout(rate=params["dropout_2"]))
-model.add(layers.Dense(units=params["relu_2"], activation='relu'))   
+model.add(layers.Dense(units=int(params["relu_2"]), activation='relu'))   
 model.add(layers.Dense(1, activation='sigmoid'))
 
 model.compile(
@@ -97,19 +108,19 @@ model.compile(
 )
     
 history = model.fit(
-    XClean, Y, epochs=params['epochs'], batch_size=128,  # hard-coded here
+    XClean, Y, epochs=int(params['epochs']), batch_size=128,  # hard-coded here
     verbose=1
 )
 
 
-# In[21]:
+# In[ ]:
 
 
 model.save(fn_model)
 
 
-# In[22]:
+# In[ ]:
 
 
-# !jupyter nbconvert --to script model_b_ann_fit.ipynb
+get_ipython().system('jupyter nbconvert --to script model_b_ann_fit.ipynb')
 

@@ -1,0 +1,2 @@
+verbose,num_trees,learning_rate,min_data_in_leaf,objective,early_stopping_round,metrics
+-1,894,0.01066833322239401,153,binary,-1,"['binary_logloss', 'auc']"

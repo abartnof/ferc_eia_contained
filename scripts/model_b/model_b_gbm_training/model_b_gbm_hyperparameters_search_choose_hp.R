@@ -11,7 +11,7 @@ CV <- read_csv(fn_cv, col_types = cols('hp_rank' = 'i', 'fold' = 'i'))
 fn_hp <- file.path(data_dir, 'working_data/model_b/model_b_training/gb_ray_tune/model_b_ann_hp_search.csv')
 HP <- read_csv(fn_hp)
 
-fn_model_b_gbm_hp <- file.path(data_dir, '/working_data/model_b/model_b_training/fn_model_b_gbm_hp.csv')
+fn_model_b_gbm_hp <- file.path(data_dir, '/working_data/model_b/model_b_training/model_b_gbm_hp.csv')
 
 
 # Look at 3, 2, 0, 1
