@@ -36,14 +36,15 @@ from scipy import stats
 from tqdm import tqdm
 
 
-# In[20]:
+# In[36]:
 
 
 data_dir = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
 dir_working_model_a_training = os.path.join(data_dir, 'working_data/model_a/model_a_training')
 dir_working_model_b_training = os.path.join(data_dir, 'working_data/model_b/model_b_training')
 
-fn_out = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/second_stage_model_cv.csv')
+# fn_out = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/second_stage_model_cv.csv')
+dir_out = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/cv_results/')
 
 
 # In[3]:
@@ -212,7 +213,7 @@ hp1_b_gbm['metrics'] = ['binary_logloss', 'auc']
 # 
 # Filter to the top n contenders per run
 
-# In[31]:
+# In[14]:
 
 
 JoinedHP2 = pd.DataFrame()
@@ -222,29 +223,30 @@ for fn in list_hp2_fn:
     HP2['fn'] = fn
     JoinedHP2 = pd.concat([JoinedHP2, HP2])
 
-mask_is_hp2_contender = JoinedHP2['rank'] <= 9  # NB this is what the user can change to test more possible hyperparameters! 0 is best.
+mask_is_hp2_contender = JoinedHP2['rank'] <= 8  # NB this is what the user can change to test more possible hyperparameters! 0 is best.
 
 
-# In[32]:
+# In[51]:
 
 
 ContenderHP2 = JoinedHP2.loc[mask_is_hp2_contender, ['config/num_trees', 'config/min_data_in_leaf', 'config/learning_rate', 'fn', 'rank']].copy()
 ContenderHP2.reset_index(inplace=True, drop=True)
 ContenderHP2.rename(columns={'config/num_trees': 'num_trees', 'config/min_data_in_leaf': 'min_data_in_leaf', 'config/learning_rate': 'learning_rate'}, inplace=True)
 ContenderHP2 = pd.DataFrame({'fold_num':np.arange(5)}).merge(ContenderHP2, how='cross')
-ContenderHP2
+ContenderHP2['fn_out'] = ContenderHP2.fold_num.astype(str) + '_' + ContenderHP2.min_data_in_leaf.astype(str) + '_' + ContenderHP2.num_trees.astype(str) + '_' + ContenderHP2.learning_rate.astype(str).str.replace(pat='0.', repl='') + '.csv'
+ContenderHP2['dir_fn_out'] = dir_out + ContenderHP2['fn_out']
 
 
-# In[33]:
+# In[52]:
 
 
-stage_2_param_dict = ContenderHP2[['fold_num', 'num_trees', 'min_data_in_leaf', 'learning_rate']].to_dict('index')
+stage_2_param_dict = ContenderHP2[['fold_num', 'num_trees', 'min_data_in_leaf', 'learning_rate', 'dir_fn_out']].to_dict('index')
 print(stage_2_param_dict[0])
 
 
 # # Load data
 
-# In[34]:
+# In[53]:
 
 
 X_a = pd.read_parquet(fn_x_a)
@@ -255,140 +257,142 @@ ID = pd.read_parquet(fn_id)
 
 # # Iterate
 
-# In[ ]:
+# In[55]:
 
 
-collected_results = []
 for i in tqdm(stage_2_param_dict.keys()):
     
     params = stage_2_param_dict[i]
     
-    # Note which fold we're on, and divvy up the data into test/train bits, based on that
-    values_for_premier_model_fits, values_for_secondary_model_train, values_for_secondary_model_test = define_folds( params['fold_num'] )
-
-    is_premier_model_fits, is_secondary_model_train, is_secondary_model_test = get_boolean_masks_for_folds(
-        ID=ID, 
-        values_for_premier_model_fits=values_for_premier_model_fits, 
-        values_for_secondary_model_train=values_for_secondary_model_train, 
-        values_for_secondary_model_test=values_for_secondary_model_test
-    )
-
-    # Y, ID
-    YPremierModelFits = Y.loc[is_premier_model_fits]
-    YSecondaryModelTrain = Y.loc[is_secondary_model_train]
-    YSecondaryModelTest = Y.loc[is_secondary_model_test]
-    
-    IDSecondaryModelTest = ID.loc[is_secondary_model_test]
-
-    # XA
-    XAPremierModelFits, XASecondaryModelTrain, XASecondaryModelTest = clean_x(
-        X=X_a, 
-        is_premier_model_fits=is_premier_model_fits, 
-        is_secondary_model_train=is_secondary_model_train, 
-        is_secondary_model_test=is_secondary_model_test
-    )
-
-    # XB
-    XBPremierModelFits, XBSecondaryModelTrain, XBSecondaryModelTest = clean_x(
-        X=X_b, 
-        is_premier_model_fits=is_premier_model_fits, 
-        is_secondary_model_train=is_secondary_model_train, 
-        is_secondary_model_test=is_secondary_model_test
-    )
-
-    # Fit models for stage 1, get y_fit
-    model_a_ann = fit_ann(params=hp1_a_ann, X=XAPremierModelFits, Y=YPremierModelFits)
-    model_a_gbm = fit_gbm(params=hp1_a_gbm, X=XAPremierModelFits, Y=YPremierModelFits)
-    model_b_ann = fit_ann(params=hp1_b_ann, X=XBPremierModelFits, Y=YPremierModelFits)
-    model_b_gbm = fit_gbm(params=hp1_b_gbm, X=XBPremierModelFits, Y=YPremierModelFits)
-
-    # ANN, stage 2 Train
-    y_fit_train_a_ann = model_a_ann.predict(convert_to_tensor(XASecondaryModelTrain))
-    y_fit_train_b_ann = model_b_ann.predict(convert_to_tensor(XBSecondaryModelTrain))
-
-    # ANN, stage 2 Test
-    y_fit_test_a_ann = model_a_ann.predict(convert_to_tensor(XASecondaryModelTest))
-    y_fit_test_b_ann = model_b_ann.predict(convert_to_tensor(XBSecondaryModelTest))
-
-    # GBM, stage 2 Train
-    y_fit_train_a_gbm = model_a_gbm.predict(XASecondaryModelTrain)
-    y_fit_train_b_gbm = model_b_gbm.predict(XBSecondaryModelTrain)
-
-    # GBM, stage 2 Test
-    y_fit_test_a_gbm = model_a_gbm.predict(XASecondaryModelTest)
-    y_fit_test_b_gbm = model_b_gbm.predict(XBSecondaryModelTest)
-
-    # Collect the above into something the 2nd stage model can use
-    XSecondaryModelTrain = np.hstack([
-        XASecondaryModelTrain, 
-        XBSecondaryModelTrain,
+    does_file_exist =  os.path.isfile( params['dir_fn_out'] )
+    if not does_file_exist:
+        try:            
+            
+            # Note which fold we're on, and divvy up the data into test/train bits, based on that
+            values_for_premier_model_fits, values_for_secondary_model_train, values_for_secondary_model_test = define_folds( params['fold_num'] )
         
-        y_fit_train_a_ann,
-        np.array( [get_dense_desc_rank( y_fit_train_a_ann )] ).T,
+            is_premier_model_fits, is_secondary_model_train, is_secondary_model_test = get_boolean_masks_for_folds(
+                ID=ID, 
+                values_for_premier_model_fits=values_for_premier_model_fits, 
+                values_for_secondary_model_train=values_for_secondary_model_train, 
+                values_for_secondary_model_test=values_for_secondary_model_test
+            )
         
-        y_fit_train_b_ann,
-        np.array( [get_dense_desc_rank( y_fit_train_b_ann )] ).T,
-    
-        np.array([y_fit_train_a_gbm]).T,
-        np.array( [get_dense_desc_rank( y_fit_train_a_gbm )] ).T,
-    
-        np.array([y_fit_train_b_gbm]).T,
-        np.array( [get_dense_desc_rank( y_fit_train_b_gbm )] ).T
-    ])
-    
-    XSecondaryModelTest = np.hstack([
-        XASecondaryModelTest, 
-        XBSecondaryModelTest,
+            # Y, ID
+            YPremierModelFits = Y.loc[is_premier_model_fits]
+            YSecondaryModelTrain = Y.loc[is_secondary_model_train]
+            YSecondaryModelTest = Y.loc[is_secondary_model_test]
+            
+            IDSecondaryModelTest = ID.loc[is_secondary_model_test]
         
-        y_fit_test_a_ann,
-        np.array( [get_dense_desc_rank( y_fit_test_a_ann )] ).T,
+            # XA
+            XAPremierModelFits, XASecondaryModelTrain, XASecondaryModelTest = clean_x(
+                X=X_a, 
+                is_premier_model_fits=is_premier_model_fits, 
+                is_secondary_model_train=is_secondary_model_train, 
+                is_secondary_model_test=is_secondary_model_test
+            )
         
-        y_fit_test_b_ann,
-        np.array( [get_dense_desc_rank( y_fit_test_b_ann )] ).T,
-    
-        np.array([y_fit_test_a_gbm]).T,
-        np.array( [get_dense_desc_rank( y_fit_test_a_gbm )] ).T,
-    
-        np.array([y_fit_test_b_gbm]).T,
-        np.array( [get_dense_desc_rank( y_fit_test_b_gbm )] ).T
-    ])
-
-    # def fit_mod(stage_2_params, XTrain, XTest, YTrain, YTest):
-    
-    XTrain = XSecondaryModelTrain
-    XTest = XSecondaryModelTest
-    YTrain = YSecondaryModelTrain
-    YTest = YSecondaryModelTest
-    
-    
-    # Package in training and testing objects
-    train_set = lgb.Dataset(XTrain, YTrain)
-    test_set  = lgb.Dataset(XTest,  YTest)
-    
-    # Model
-    gbm = lgb.train(
-        params,
-        train_set
-        # valid_sets=[test_set]    
-    )
-    y_fit = gbm.predict(XTest)
-
-    # Goodness of fit
-    Framework = IDSecondaryModelTest[['record_id_ferc1']].copy()
-    Framework['y_fit'] = y_fit
-    Framework['groupwise_max_y_fit'] = Framework.groupby('record_id_ferc1')['y_fit'].transform('max')
-    Framework['y_fit_adj'] = Framework['y_fit'] == Framework['groupwise_max_y_fit']
-    
-    gof_dict = {
-        'precision' : sklearn_metrics.precision_score(YTest.values, Framework['y_fit_adj'].values*1),
-        'recall' : sklearn_metrics.recall_score(YTest.values, Framework['y_fit_adj'].values*1),
-        'log_loss' : sklearn_metrics.log_loss(YTest.values, y_fit),
-        'roc_auc' : sklearn_metrics.roc_auc_score(YTest.values, y_fit)
-    }
-
-    results = stage_2_param_dict[i] | gof_dict
-    collected_results.append(results)
-
-CollectedResults = pd.concat([pd.DataFrame(dict, index=[1]) for dict in collected_results])
-CollectedResults.reset_index(drop=True, inplace=True)
-CollectedResults.to_csv(fn_out)
+            # XB
+            XBPremierModelFits, XBSecondaryModelTrain, XBSecondaryModelTest = clean_x(
+                X=X_b, 
+                is_premier_model_fits=is_premier_model_fits, 
+                is_secondary_model_train=is_secondary_model_train, 
+                is_secondary_model_test=is_secondary_model_test
+            )
+        
+            # Fit models for stage 1, get y_fit
+            model_a_ann = fit_ann(params=hp1_a_ann, X=XAPremierModelFits, Y=YPremierModelFits)
+            model_a_gbm = fit_gbm(params=hp1_a_gbm, X=XAPremierModelFits, Y=YPremierModelFits)
+            model_b_ann = fit_ann(params=hp1_b_ann, X=XBPremierModelFits, Y=YPremierModelFits)
+            model_b_gbm = fit_gbm(params=hp1_b_gbm, X=XBPremierModelFits, Y=YPremierModelFits)
+        
+            # ANN, stage 2 Train
+            y_fit_train_a_ann = model_a_ann.predict(convert_to_tensor(XASecondaryModelTrain))
+            y_fit_train_b_ann = model_b_ann.predict(convert_to_tensor(XBSecondaryModelTrain))
+        
+            # ANN, stage 2 Test
+            y_fit_test_a_ann = model_a_ann.predict(convert_to_tensor(XASecondaryModelTest))
+            y_fit_test_b_ann = model_b_ann.predict(convert_to_tensor(XBSecondaryModelTest))
+        
+            # GBM, stage 2 Train
+            y_fit_train_a_gbm = model_a_gbm.predict(XASecondaryModelTrain)
+            y_fit_train_b_gbm = model_b_gbm.predict(XBSecondaryModelTrain)
+        
+            # GBM, stage 2 Test
+            y_fit_test_a_gbm = model_a_gbm.predict(XASecondaryModelTest)
+            y_fit_test_b_gbm = model_b_gbm.predict(XBSecondaryModelTest)
+        
+            # Collect the above into something the 2nd stage model can use
+            XSecondaryModelTrain = np.hstack([
+                XASecondaryModelTrain, 
+                XBSecondaryModelTrain,
+                
+                y_fit_train_a_ann,
+                np.array( [get_dense_desc_rank( y_fit_train_a_ann )] ).T,
+                
+                y_fit_train_b_ann,
+                np.array( [get_dense_desc_rank( y_fit_train_b_ann )] ).T,
+            
+                np.array([y_fit_train_a_gbm]).T,
+                np.array( [get_dense_desc_rank( y_fit_train_a_gbm )] ).T,
+            
+                np.array([y_fit_train_b_gbm]).T,
+                np.array( [get_dense_desc_rank( y_fit_train_b_gbm )] ).T
+            ])
+            
+            XSecondaryModelTest = np.hstack([
+                XASecondaryModelTest, 
+                XBSecondaryModelTest,
+                
+                y_fit_test_a_ann,
+                np.array( [get_dense_desc_rank( y_fit_test_a_ann )] ).T,
+                
+                y_fit_test_b_ann,
+                np.array( [get_dense_desc_rank( y_fit_test_b_ann )] ).T,
+            
+                np.array([y_fit_test_a_gbm]).T,
+                np.array( [get_dense_desc_rank( y_fit_test_a_gbm )] ).T,
+            
+                np.array([y_fit_test_b_gbm]).T,
+                np.array( [get_dense_desc_rank( y_fit_test_b_gbm )] ).T
+            ])
+        
+            # def fit_mod(stage_2_params, XTrain, XTest, YTrain, YTest):
+            
+            XTrain = XSecondaryModelTrain
+            XTest = XSecondaryModelTest
+            YTrain = YSecondaryModelTrain
+            YTest = YSecondaryModelTest
+            
+            
+            # Package in training and testing objects
+            train_set = lgb.Dataset(XTrain, YTrain)
+            test_set  = lgb.Dataset(XTest,  YTest)
+            
+            # Model
+            gbm = lgb.train(
+                params,
+                train_set
+                # valid_sets=[test_set]    
+            )
+            y_fit = gbm.predict(XTest)
+        
+            # Goodness of fit
+            Framework = IDSecondaryModelTest[['record_id_ferc1']].copy()
+            Framework['y_fit'] = y_fit
+            Framework['groupwise_max_y_fit'] = Framework.groupby('record_id_ferc1')['y_fit'].transform('max')
+            Framework['y_fit_adj'] = Framework['y_fit'] == Framework['groupwise_max_y_fit']
+            
+            gof_dict = {
+                'precision' : sklearn_metrics.precision_score(YTest.values, Framework['y_fit_adj'].values*1),
+                'recall' : sklearn_metrics.recall_score(YTest.values, Framework['y_fit_adj'].values*1),
+                'log_loss' : sklearn_metrics.log_loss(YTest.values, y_fit),
+                'roc_auc' : sklearn_metrics.roc_auc_score(YTest.values, y_fit)
+            }
+        
+            results = stage_2_param_dict[i] | gof_dict
+            pd.DataFrame(results, index=[0]).drop('dir_fn_out', axis=1).to_csv(params['dir_fn_out'], index=False)
+            
+        except:
+            print('CV error, moving to next hyperparameters')
