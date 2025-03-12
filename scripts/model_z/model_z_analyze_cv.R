@@ -15,7 +15,7 @@ for (fn in list_fn){
 }
 TempCV <- as_tibble(TempCV)
 ID <-
-	CV %>%
+	TempCV %>%
 	distinct(num_trees, min_data_in_leaf, learning_rate) %>%
 	rowid_to_column(var = 'id')
 CV <-

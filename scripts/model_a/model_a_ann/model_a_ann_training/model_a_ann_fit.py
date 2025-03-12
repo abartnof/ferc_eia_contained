@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 import pandas as pd
@@ -17,7 +17,7 @@ from sklearn.preprocessing import StandardScaler
 # utils.set_random_seed(1)
 
 
-# In[3]:
+# In[2]:
 
 
 data_dir = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
@@ -25,7 +25,7 @@ dir_working_model_a_training = os.path.join(data_dir, 'working_data/model_a/mode
 dir_working_model_a_training
 
 
-# In[4]:
+# In[3]:
 
 
 fn_x = os.path.join(dir_working_model_a_training, 'x.parquet')
@@ -35,7 +35,7 @@ fn_id = os.path.join(dir_working_model_a_training, 'id.parquet')
 fn_model = os.path.join(dir_working_model_a_training, 'model_a_ann.keras')
 
 
-# In[20]:
+# In[4]:
 
 
 fn_params = os.path.join(dir_working_model_a_training, 'model_a_ann_hp.csv')
@@ -44,7 +44,7 @@ params = {k:params[k][0] for k in params.keys()}
 print(params)
 
 
-# In[23]:
+# In[5]:
 
 
 def np_cleaning(X):
@@ -53,7 +53,7 @@ def np_cleaning(X):
     return X
 
 
-# In[24]:
+# In[6]:
 
 
 X = pd.read_parquet(fn_x)
@@ -61,7 +61,7 @@ Y = pd.read_parquet(fn_y)
 ID = pd.read_parquet(fn_id)
 
 
-# In[25]:
+# In[7]:
 
 
 # This is all done automagically by the R script that creates the new data tranches.
