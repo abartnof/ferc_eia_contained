@@ -36,7 +36,7 @@ from scipy import stats
 from tqdm import tqdm
 
 
-# In[36]:
+# In[2]:
 
 
 data_dir = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
@@ -80,9 +80,16 @@ def prep_x(fit_scaler, X):
     # X = convert_to_tensor(X)
     return(X)
 
-def get_dense_desc_rank(nn):
-    # will be used for ranking y_fits
-    return( stats.rankdata(-nn, method='dense') )
+def get_grouped_rank(ID, mask, y_fit):
+    # Return an array with each y_fit's rank, in descending order + dense method, grouped 
+    # by record_id_ferc1
+    CteTrain = ID.loc[mask, ['record_id_ferc1']].copy()
+    # CteTrain = ID.loc[is_secondary_model_train, ['record_id_ferc1']].copy()
+    CteTrain['y_fit'] = y_fit
+    # CteTrain['y_fit'] = y_fit_train_a_gbm
+    CteTrain.groupby('record_id_ferc1')['y_fit'].rank(method='dense', ascending=False)
+    return CteTrain[['y_fit']]
+# Cte[['y_fit']] = y_fit_train
 
 def define_folds(values_for_secondary_model_test):
     # If fold f is reserved for secondary model_test, split the remaining folds
@@ -223,10 +230,10 @@ for fn in list_hp2_fn:
     HP2['fn'] = fn
     JoinedHP2 = pd.concat([JoinedHP2, HP2])
 
-mask_is_hp2_contender = JoinedHP2['rank'] <= 8  # NB this is what the user can change to test more possible hyperparameters! 0 is best.
+mask_is_hp2_contender = JoinedHP2['rank'] <= 15  # NB this is what the user can change to test more possible hyperparameters! 0 is best.
 
 
-# In[51]:
+# In[15]:
 
 
 ContenderHP2 = JoinedHP2.loc[mask_is_hp2_contender, ['config/num_trees', 'config/min_data_in_leaf', 'config/learning_rate', 'fn', 'rank']].copy()
@@ -237,7 +244,7 @@ ContenderHP2['fn_out'] = ContenderHP2.fold_num.astype(str) + '_' + ContenderHP2.
 ContenderHP2['dir_fn_out'] = dir_out + ContenderHP2['fn_out']
 
 
-# In[52]:
+# In[16]:
 
 
 stage_2_param_dict = ContenderHP2[['fold_num', 'num_trees', 'min_data_in_leaf', 'learning_rate', 'dir_fn_out']].to_dict('index')
@@ -246,7 +253,7 @@ print(stage_2_param_dict[0])
 
 # # Load data
 
-# In[53]:
+# In[17]:
 
 
 X_a = pd.read_parquet(fn_x_a)
@@ -324,42 +331,43 @@ for i in tqdm(stage_2_param_dict.keys()):
             y_fit_test_b_gbm = model_b_gbm.predict(XBSecondaryModelTest)
         
             # Collect the above into something the 2nd stage model can use
+            mask=is_secondary_model_train
             XSecondaryModelTrain = np.hstack([
                 XASecondaryModelTrain, 
                 XBSecondaryModelTrain,
                 
                 y_fit_train_a_ann,
-                np.array( [get_dense_desc_rank( y_fit_train_a_ann )] ).T,
+                get_grouped_rank(ID=ID, mask=mask, y_fit=y_fit_train_a_ann).to_numpy(),
                 
                 y_fit_train_b_ann,
-                np.array( [get_dense_desc_rank( y_fit_train_b_ann )] ).T,
+                get_grouped_rank(ID=ID, mask=mask, y_fit=y_fit_train_b_ann).to_numpy(),
+            
             
                 np.array([y_fit_train_a_gbm]).T,
-                np.array( [get_dense_desc_rank( y_fit_train_a_gbm )] ).T,
+                get_grouped_rank(ID=ID, mask=mask, y_fit=y_fit_train_a_gbm).to_numpy(),
             
                 np.array([y_fit_train_b_gbm]).T,
-                np.array( [get_dense_desc_rank( y_fit_train_b_gbm )] ).T
+                get_grouped_rank(ID=ID, mask=mask, y_fit=y_fit_train_b_gbm).to_numpy()
             ])
-            
+
+            mask=is_secondary_model_test           
             XSecondaryModelTest = np.hstack([
                 XASecondaryModelTest, 
                 XBSecondaryModelTest,
                 
                 y_fit_test_a_ann,
-                np.array( [get_dense_desc_rank( y_fit_test_a_ann )] ).T,
+                get_grouped_rank(ID=ID, mask=mask, y_fit=y_fit_test_a_ann).to_numpy(),
                 
                 y_fit_test_b_ann,
-                np.array( [get_dense_desc_rank( y_fit_test_b_ann )] ).T,
+                get_grouped_rank(ID=ID, mask=mask, y_fit=y_fit_test_b_ann).to_numpy(),
             
                 np.array([y_fit_test_a_gbm]).T,
-                np.array( [get_dense_desc_rank( y_fit_test_a_gbm )] ).T,
+                get_grouped_rank(ID=ID, mask=mask, y_fit=y_fit_test_a_gbm).to_numpy(),
             
                 np.array([y_fit_test_b_gbm]).T,
-                np.array( [get_dense_desc_rank( y_fit_test_b_gbm )] ).T
+                get_grouped_rank(ID=ID, mask=mask, y_fit=y_fit_test_b_gbm).to_numpy()
             ])
-        
-            # def fit_mod(stage_2_params, XTrain, XTest, YTrain, YTest):
-            
+
             XTrain = XSecondaryModelTrain
             XTest = XSecondaryModelTest
             YTrain = YSecondaryModelTrain
