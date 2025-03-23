@@ -23,6 +23,7 @@ import pandas as pd
 import numpy as np
 from glob import glob
 import os
+import re
 
 from keras import models, layers, regularizers, optimizers, callbacks, utils, losses, metrics
 from tensorflow.keras.backend import clear_session
@@ -47,10 +48,29 @@ dir_working_model_b_training = os.path.join(data_dir, 'working_data/model_b/mode
 dir_out = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/cv_results/')
 
 
-# In[3]:
+# In[28]:
 
 
-list_hp2_fn = glob(os.path.join(data_dir, '**/gbm_grid*.csv'), recursive=True)
+# Get most promising stage 2 hyperparameters from results of grid search
+
+fn_hp2 = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/gbm_raytune_2025_03_21/gbm_grid_2025_03_21.csv')
+HP2 = pd.read_csv(fn_hp2)
+HP2 = HP2.loc[ HP2['rank'] < 10 ]
+HP2 = HP2.set_index('rank', drop=True)
+HP2 = HP2[['config/verbose', 'config/num_trees', 'config/learning_rate', 'config/min_data_in_leaf', 'config/objective', 'config/early_stopping_round', 'config/metrics']]
+HP2 = HP2.rename(columns=lambda x: re.sub('^config/','',x))
+HP2 = HP2.merge( pd.DataFrame({'fold_num':np.arange(5)}), how='cross')
+
+hp2_dict = HP2.to_dict(orient='index')
+
+for k in hp2_dict.keys():
+    # Metrics
+    hp2_dict[k]['metrics'] = ['binary_logloss', 'auc']
+    # fn_out
+    hp2_dict[k]['fn_out'] = 'num_trees_' + str(hp2_dict[k]['num_trees']) + '__learning_rate_' + str(hp2_dict[k]['learning_rate']) + '__min_data_in_leaf_' + str(hp2_dict[k]['min_data_in_leaf']) + '__fold_num_' + str(hp2_dict[k]['fold_num'])
+    hp2_dict[k]['fn_out'] = re.sub(r'\.', 'DOT', hp2_dict[k]['fn_out'])
+    hp2_dict[k]['fn_out'] = hp2_dict[k]['fn_out'] + '.csv'
+    hp2_dict[k]['fn_out'] = os.path.join(dir_out, hp2_dict[k]['fn_out'])
 
 
 # In[4]:
@@ -216,44 +236,9 @@ hp1_b_gbm = {k:hp1_b_gbm[k][0] for k in hp1_b_gbm.keys()}
 hp1_b_gbm['metrics'] = ['binary_logloss', 'auc']
 
 
-# # Collect Stage 2 Contender Hyperparameters
-# 
-# Filter to the top n contenders per run
-
-# In[14]:
-
-
-JoinedHP2 = pd.DataFrame()
-
-for fn in list_hp2_fn:
-    HP2 = pd.read_csv(fn)
-    HP2['fn'] = fn
-    JoinedHP2 = pd.concat([JoinedHP2, HP2])
-
-mask_is_hp2_contender = JoinedHP2['rank'] <= 15  # NB this is what the user can change to test more possible hyperparameters! 0 is best.
-
-
-# In[15]:
-
-
-ContenderHP2 = JoinedHP2.loc[mask_is_hp2_contender, ['config/num_trees', 'config/min_data_in_leaf', 'config/learning_rate', 'fn', 'rank']].copy()
-ContenderHP2.reset_index(inplace=True, drop=True)
-ContenderHP2.rename(columns={'config/num_trees': 'num_trees', 'config/min_data_in_leaf': 'min_data_in_leaf', 'config/learning_rate': 'learning_rate'}, inplace=True)
-ContenderHP2 = pd.DataFrame({'fold_num':np.arange(5)}).merge(ContenderHP2, how='cross')
-ContenderHP2['fn_out'] = ContenderHP2.fold_num.astype(str) + '_' + ContenderHP2.min_data_in_leaf.astype(str) + '_' + ContenderHP2.num_trees.astype(str) + '_' + ContenderHP2.learning_rate.astype(str).str.replace(pat='0.', repl='') + '.csv'
-ContenderHP2['dir_fn_out'] = dir_out + ContenderHP2['fn_out']
-
-
-# In[16]:
-
-
-stage_2_param_dict = ContenderHP2[['fold_num', 'num_trees', 'min_data_in_leaf', 'learning_rate', 'dir_fn_out']].to_dict('index')
-print(stage_2_param_dict[0])
-
-
 # # Load data
 
-# In[17]:
+# In[14]:
 
 
 X_a = pd.read_parquet(fn_x_a)
@@ -267,11 +252,11 @@ ID = pd.read_parquet(fn_id)
 # In[55]:
 
 
-for i in tqdm(stage_2_param_dict.keys()):
+for i in tqdm(hp2_dict.keys()):
     
-    params = stage_2_param_dict[i]
+    params = hp2_dict[i]
     
-    does_file_exist =  os.path.isfile( params['dir_fn_out'] )
+    does_file_exist =  os.path.isfile( params['fn_out'] )
     if not does_file_exist:
         try:            
             
@@ -400,7 +385,8 @@ for i in tqdm(stage_2_param_dict.keys()):
             }
         
             results = stage_2_param_dict[i] | gof_dict
-            pd.DataFrame(results, index=[0]).drop('dir_fn_out', axis=1).to_csv(params['dir_fn_out'], index=False)
+            pd.DataFrame(results, index=[0]).drop('dir_fn_out', axis=1).to_csv(params['fn_out'], index=False)
             
         except:
             print('CV error, moving to next hyperparameters')
+

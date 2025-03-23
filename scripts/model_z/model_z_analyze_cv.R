@@ -23,6 +23,8 @@ CV <-
 	left_join(ID, by = c('num_trees', 'min_data_in_leaf', 'learning_rate')) %>%
 	relocate('id')
 
+max(CV$id)
+
 #### QC ####
 # All hyperparameter sets got 5 tests, which is correct
 CV %>%
@@ -61,7 +63,30 @@ Contenders <-
 
 #### Diagrams ####
 
-# Contenders only
+# Contenders only: mean
+# Based on mean values, for precision and recall, 
+# model 16 is best, with 9 as a close 2nd
+CV %>%
+	inner_join(Contenders, by = 'id') %>%
+	select(id, distance_rank, precision, recall, log_loss, roc_auc) %>%
+	mutate(
+		distance_rank = ordered(distance_rank),
+		id = factor(id, ordered = FALSE)
+	) %>%
+	gather(variable, value, -id, -distance_rank) %>%
+	group_by(id, distance_rank, variable) %>%
+	summarize(avg = mean(value)) %>%
+	ungroup %>%
+	ggplot(aes(x = id, color = distance_rank, y = avg)) +
+	geom_point(size = 5) +	
+	scale_color_brewer(palette = 'Spectral', direction = -1) +
+	facet_wrap(~variable, scales = 'free_y') +
+	theme(panel.grid = element_blank())
+	
+
+# Contenders only: full distribution
+# Based now on medians of precision and recall, 
+# model 16 still looks best
 CV %>%
 	select(id, precision, recall, log_loss, roc_auc) %>%
 	inner_join(Contenders, by = 'id') %>%
@@ -102,9 +127,7 @@ CV %>%
 	scale_color_brewer(palette = 'Spectral', direction = -1, na.value = "grey50") +
 	labs(x = 'Hyperparameter set ID', y = 'Mean', color = 'Rank', title = 'Mean values (all hyperparameters)')
 
-# Model 2 looks good-- great recall, good precision
 # QC-- look at the 2d space, see if these rankings made sense. 
-# they did! model 2 looks very good here
 CV %>%
 	select(id, precision, recall) %>%
 	gather(variable, value, -id) %>%
