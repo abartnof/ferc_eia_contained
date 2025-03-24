@@ -1,0 +1,2 @@
+verbose,num_trees,learning_rate,min_data_in_leaf,objective,early_stopping_round,fold_num,precision,recall,log_loss,roc_auc
+-1,552,0.0134677169633688,91,binary,-1,1,0.994556765163297,0.994556765163297,0.00019811912697557162,0.9999763435151614

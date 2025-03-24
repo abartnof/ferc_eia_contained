@@ -48,7 +48,7 @@ dir_working_model_b_training = os.path.join(data_dir, 'working_data/model_b/mode
 dir_out = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/cv_results/')
 
 
-# In[28]:
+# In[3]:
 
 
 # Get most promising stage 2 hyperparameters from results of grid search
@@ -73,7 +73,7 @@ for k in hp2_dict.keys():
     hp2_dict[k]['fn_out'] = os.path.join(dir_out, hp2_dict[k]['fn_out'])
 
 
-# In[4]:
+# In[9]:
 
 
 fn_x_a = os.path.join(dir_working_model_a_training, 'x.parquet')
@@ -84,7 +84,7 @@ fn_x_b = os.path.join(dir_working_model_b_training, 'x.parquet')
 fn_y_b = os.path.join(dir_working_model_b_training, 'y.parquet')
 
 
-# In[5]:
+# In[10]:
 
 
 # Define functions
@@ -128,7 +128,7 @@ def define_folds(values_for_secondary_model_test):
     return values_for_premier_model_fits, values_for_secondary_model_train, np.array(values_for_secondary_model_test)
 
 
-# In[6]:
+# In[11]:
 
 
 def get_boolean_masks_for_folds(ID, values_for_premier_model_fits, values_for_secondary_model_train, values_for_secondary_model_test):
@@ -138,7 +138,7 @@ def get_boolean_masks_for_folds(ID, values_for_premier_model_fits, values_for_se
     return is_premier_model_fits, is_secondary_model_train, is_secondary_model_test
 
 
-# In[7]:
+# In[12]:
 
 
 def fit_ann(params, X, Y):
@@ -167,7 +167,7 @@ def fit_ann(params, X, Y):
     return model_ann
 
 
-# In[8]:
+# In[13]:
 
 
 def fit_gbm(params, X, Y):
@@ -180,7 +180,7 @@ def fit_gbm(params, X, Y):
     return model_gbm
 
 
-# In[9]:
+# In[14]:
 
 
 def clean_x(X, is_premier_model_fits, is_secondary_model_train, is_secondary_model_test):
@@ -202,7 +202,7 @@ def clean_x(X, is_premier_model_fits, is_secondary_model_train, is_secondary_mod
 # 
 # Note that these are a 'fait accompli', and need only be read from the disk
 
-# In[10]:
+# In[15]:
 
 
 fn_model_a_ann_hp = os.path.join(data_dir, 'working_data/model_a/model_a_training/model_a_ann_hp.csv')
@@ -210,7 +210,7 @@ hp1_a_ann = pd.read_csv(fn_model_a_ann_hp).to_dict(orient='list')
 hp1_a_ann = {k:hp1_a_ann[k][0] for k in hp1_a_ann.keys()}
 
 
-# In[11]:
+# In[16]:
 
 
 fn_model_a_gbm_hp = os.path.join(data_dir, 'working_data/model_a/model_a_training/model_a_gbm_hp.csv')
@@ -219,7 +219,7 @@ hp1_a_gbm = {k:hp1_a_gbm[k][0] for k in hp1_a_gbm.keys()}
 hp1_a_gbm['metrics'] = ['binary_logloss', 'auc']
 
 
-# In[12]:
+# In[17]:
 
 
 fn_model_b_ann_hp = os.path.join(data_dir, 'working_data/model_b/model_b_training/model_b_ann_hp.csv')
@@ -227,7 +227,7 @@ hp1_b_ann = pd.read_csv(fn_model_b_ann_hp).to_dict(orient='list')
 hp1_b_ann = {k:hp1_b_ann[k][0] for k in hp1_b_ann.keys()}
 
 
-# In[13]:
+# In[18]:
 
 
 fn_model_b_gbm_hp = os.path.join(data_dir, 'working_data/model_b/model_b_training/model_b_gbm_hp.csv')
@@ -238,7 +238,7 @@ hp1_b_gbm['metrics'] = ['binary_logloss', 'auc']
 
 # # Load data
 
-# In[14]:
+# In[19]:
 
 
 X_a = pd.read_parquet(fn_x_a)
@@ -383,9 +383,11 @@ for i in tqdm(hp2_dict.keys()):
                 'log_loss' : sklearn_metrics.log_loss(YTest.values, y_fit),
                 'roc_auc' : sklearn_metrics.roc_auc_score(YTest.values, y_fit)
             }
-        
-            results = stage_2_param_dict[i] | gof_dict
-            pd.DataFrame(results, index=[0]).drop('dir_fn_out', axis=1).to_csv(params['fn_out'], index=False)
+
+            results = params | gof_dict
+            del results['metrics']
+            del results['fn_out']
+            pd.DataFrame(results, index=[0]).to_csv(params['fn_out'], index=False)
             
         except:
             print('CV error, moving to next hyperparameters')
