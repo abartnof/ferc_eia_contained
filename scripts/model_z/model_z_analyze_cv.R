@@ -1,6 +1,7 @@
 library(tidyverse)
 library(skimr)
 library(car)
+library(corrplot)
 
 #### ELT ####
 data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
@@ -33,8 +34,13 @@ CV %>%
 
 #### Analysis ####
 CV %>%
-	select(-id, -fold_num) %>%
+	select(num_trees, learning_rate, min_data_in_leaf, precision, recall, log_loss, roc_auc) %>%
 	scatterplotMatrix()
+
+CV %>%
+	select(num_trees, learning_rate, min_data_in_leaf, precision, recall, log_loss, roc_auc) %>%
+	cor %>%
+	corrplot(method='number', type = 'lower', diag=FALSE)
 
 # Divvy the data into a handful of points to focus on.
 # Here, i'll take each hyperparameter set's avg precision and recall,
@@ -65,7 +71,7 @@ Contenders <-
 
 # Contenders only: mean
 # Based on mean values, for precision and recall, 
-# model 16 is best, with 9 as a close 2nd
+# model n2 looks great
 CV %>%
 	inner_join(Contenders, by = 'id') %>%
 	select(id, distance_rank, precision, recall, log_loss, roc_auc) %>%
@@ -86,7 +92,7 @@ CV %>%
 
 # Contenders only: full distribution
 # Based now on medians of precision and recall, 
-# model 16 still looks best
+# model n2 looks great
 CV %>%
 	select(id, precision, recall, log_loss, roc_auc) %>%
 	inner_join(Contenders, by = 'id') %>%
@@ -172,8 +178,16 @@ CV %>%
 	coord_cartesian(xlim = c(0.99, 1), ylim = c(0.994, 1))
 
 #### Export chosen hyperparameters
+# num_trees: 555
+# min_data_in_leaf: 147
+# learning_rate: 0.0144
 CV %>%
 	inner_join(Contenders, by = 'id') %>%
 	filter(distance_rank == 1) %>%
-	distinct(num_trees, min_data_in_leaf, learning_rate) %>%
+	distinct(verbose, num_trees, learning_rate, min_data_in_leaf, objective, early_stopping_round)
+
+CV %>%
+	inner_join(Contenders, by = 'id') %>%
+	filter(distance_rank == 1) %>%
+	distinct(num_trees, min_data_in_leaf, learning_rate, early_stopping_round) %>%
 	write_csv(fn_out)
