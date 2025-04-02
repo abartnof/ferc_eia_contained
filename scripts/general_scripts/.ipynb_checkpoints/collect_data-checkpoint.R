@@ -1,13 +1,20 @@
-# Collect input data from Pudl Sqlite file
+#-------------------------------------------------------------------------------
+# collect_data.R
 
-# __author__ = "Andrew Bartnof"
-# __copyright__ = "collect_data.R © 2020 by Andrew Bartnof is licensed under CC BY-SA 4.0"
-# __credits__ = ["Andrew Bartnof", "Alex Engel"]
-# __license__ = "CC BY-SA 4.0"
-# __version__ = "1.0"
-# __maintainer__ = "Andrew Bartnof"
-# __email__ = "abartnof.contractor@rmi.org"
-# __status__ = "Production"
+# Extract tables from Catalyst Coöp PUDL sqlite files, 
+# perform light data cleaning.
+
+# Author: Andrew Bartnof, for RMI
+# Email: abartnof.contractor@rmi.org
+# 2024
+
+# input: 
+# 	CC PUDL Sqlite file
+# output: 
+# 	EIA plant parts table
+# 	FERC1 table
+# 	FERC utility table (map utility_id_ferc to utility_name_ferc)
+#-------------------------------------------------------------------------------
 
 library(tidyverse)
 library(skimr)

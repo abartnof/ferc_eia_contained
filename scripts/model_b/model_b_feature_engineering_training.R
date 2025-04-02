@@ -1,6 +1,6 @@
 #### Source functions ####
 dir_scripts <- '~/Documents/rmi/rematch_ferc_eia_pixi/ferc_eia/scripts/'
-fn_functions <- file.path(dir_scripts, '/model_b/model_b_encode_data_functions.R')
+fn_functions <- file.path(dir_scripts, '/model_b/model_b_feature_engineering_functions.R')
 source(fn_functions)
 
 #### Load tables ####
