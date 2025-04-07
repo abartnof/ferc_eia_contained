@@ -1,9 +1,13 @@
 library(tidyverse)
 library(skimr)
-library(car)
+library(psych)
 
 data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
 dir_model_a_training_ann <- file.path(data_dir, '/working_data/model_a/model_a_training/ann_ray_tune/')
+
+fn_stats_out <- file.path(data_dir, '/output_data/stats/stats_a_ann.csv')
+fn_splot_out <- file.path(data_dir, '/output_data/stats/splot_a_ann.png')
+fn_boxplot_out <- file.path(data_dir, '/output_data/stats/boxplot_a_ann.png')
 
 fn_metrics <- file.path(
 	dir_model_a_training_ann, 
@@ -30,6 +34,11 @@ Metrics <- read_csv(fn_metrics, col_types = cols('hp_rank' = 'i', 'fold' = 'i'))
 History <- read_csv(fn_history, col_types = cols('hp_rank' = 'i', 'fold' = 'i', 'epoch' = 'i'))
 HP <- read_csv(fn_hp)
 
+png(filename=fn_splot_out);  HP %>%
+	select(binary_crossentropy, auc, starts_with('config')) %>%
+	rename_all(str_replace, 'config/', '') %>%
+	pairs.panels(., main='Hyperparameter search: ANN A');  dev.off()
+
 # Loss
 # Pretty clear that hp_rank == 3 has the lowest log-loss
 Metrics %>%
@@ -43,18 +52,23 @@ Metrics %>%
 	geom_label()
 
 # Boxplots
-Metrics %>%
+boxplot <-
+	Metrics %>%
 	select(-fold) %>%
 	gather(variable, value, -hp_rank) %>%
 	mutate(
 		hp_rank = ordered(hp_rank),
-		color = hp_rank == 3
+		color = if_else(hp_rank == 3, 'Selected', 'Not selected')
 	) %>%
 	ggplot(aes(x = hp_rank, y = value, fill = color)) +
 	geom_boxplot() +
 	facet_wrap(~variable, scales='free_y') +
 	scale_fill_manual(values = c('white', 'dodgerblue')) +
-	labs(x = 'Model', y = 'Value') 
+	labs(x = 'Model', y = '', title = 'Cross-validation of ANN A', fill = '') +
+	theme(legend.position = 'bottom')
+
+plot(boxplot)
+ggsave(plot=boxplot, filename=fn_boxplot_out)
 
 # hp_rank == 3 is our best model
 Metrics %>%
@@ -148,3 +162,8 @@ HP %>%
 	select(starts_with('config')) %>%
 	rename_all(str_replace, 'config/', '') %>%
 	scatterplotMatrix()
+
+Metrics %>%
+	filter(hp_rank == 3) %>%
+	select(fold, accuracy, roc_auc, log_loss, precision, recall) %>%
+	write_csv(fn_stats_out)

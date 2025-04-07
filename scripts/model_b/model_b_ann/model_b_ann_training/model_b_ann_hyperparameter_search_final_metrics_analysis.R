@@ -1,6 +1,6 @@
 library(tidyverse)
 library(skimr)
-library(car)
+library(psych)
 
 data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
 dir_model_b_training_ann <- file.path(data_dir, '/working_data/model_b/model_b_training/ann_ray_tune/')
@@ -24,12 +24,22 @@ fn_model_b_ann_hp <- file.path(
 	data_dir, 
 	'/working_data/model_b/model_b_training/model_b_ann_hp.csv'
 )
+fn_stats_out <- file.path(data_dir, '/output_data/stats/stats_b_ann.csv')
+fn_splot_out <- file.path(data_dir, '/output_data/stats/splot_b_ann.png')
+fn_boxplot_out <- file.path(data_dir, '/output_data/stats/boxplot_b_ann.png')
+
 
 
 
 Metrics <- read_csv(fn_metrics, col_types = cols('hp_rank' = 'i', 'fold' = 'i'))
 History <- read_csv(fn_history, col_types = cols('hp_rank' = 'i', 'fold' = 'i', 'epoch' = 'i'))
 HP <- read_csv(fn_hp)
+
+png(filename=fn_splot_out);  HP %>%
+	select(binary_crossentropy, auc, starts_with('config')) %>%
+	rename_all(str_replace, 'config/', '') %>%
+	pairs.panels(., main='Hyperparameter search: ANN B');  dev.off()
+
 
 # Loss
 # Model 7 looks promising, 13 in next place
@@ -44,22 +54,23 @@ Metrics %>%
 	geom_label()
 
 # Boxplots
-Metrics %>%
+boxplot <-
+	Metrics %>%
 	select(-fold) %>%
 	gather(variable, value, -hp_rank) %>%
 	mutate(
-		color = case_when(
-			hp_rank %in% c(7, 13) ~ hp_rank, 
-			T ~ 99),
 		hp_rank = ordered(hp_rank),
-		color = ordered(color)
+		color = if_else(hp_rank == 7, 'Selected', 'Not selected')
 	) %>%
 	ggplot(aes(x = hp_rank, y = value, fill = color)) +
 	geom_boxplot() +
 	facet_wrap(~variable, scales='free_y') +
-	scale_fill_manual(values = c('dodgerblue', 'lightblue', 'white')) +
-	labs(x = 'Model', y = 'Value') 
+	scale_fill_manual(values = c('white', 'dodgerblue')) +
+	labs(x = 'Model', y = '', title = 'Cross-validation of ANN B', fill = '') +
+	theme(legend.position = 'bottom')
 
+plot(boxplot)
+ggsave(plot=boxplot, filename=fn_boxplot_out)
 # hp_rank == 7 is our best model
 Metrics %>%
 	group_by(hp_rank) %>%
@@ -150,7 +161,7 @@ HP %>%
 	mutate(epochs = 14L) %>%
 	write_csv(fn_model_b_ann_hp)
 
-HP %>%
-	select(starts_with('config')) %>%
-	rename_all(str_replace, 'config/', '') %>%
-	scatterplotMatrix()
+Metrics %>%
+	filter(hp_rank == 7L) %>%
+	select(fold, accuracy, roc_auc, log_loss, precision, recall) %>%
+	write_csv(fn_stats_out)
