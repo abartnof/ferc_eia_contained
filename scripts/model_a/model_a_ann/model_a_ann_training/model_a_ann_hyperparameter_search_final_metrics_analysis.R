@@ -65,7 +65,9 @@ boxplot <-
 	facet_wrap(~variable, scales='free_y') +
 	scale_fill_manual(values = c('white', 'dodgerblue')) +
 	labs(x = 'Model', y = '', title = 'Cross-validation of ANN A', fill = '') +
-	theme(legend.position = 'bottom')
+	theme(
+		legend.position = 'bottom',
+		axis.ticks.x = element_blank())
 
 plot(boxplot)
 ggsave(plot=boxplot, filename=fn_boxplot_out)

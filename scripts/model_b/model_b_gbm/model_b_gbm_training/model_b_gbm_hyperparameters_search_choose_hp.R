@@ -55,7 +55,9 @@ boxplot <-
 	geom_boxplot() +
 	facet_wrap(~variable, scales = 'free') +
 	scale_fill_manual(values = c('white', 'dodgerblue')) +
-	theme(legend.position = 'bottom') +
+	theme(
+		axis.ticks.x = element_blank(),
+		legend.position = 'bottom') +
 	labs(x = 'Model', y = '', title = 'Cross-validation of GBM B', fill = '')
 plot(boxplot)
 ggsave(plot=boxplot, filename=fn_boxplot_out)

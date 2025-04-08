@@ -1,6 +1,7 @@
 library(tidyverse)
 library(skimr)
-library(car)
+# library(car)
+library(psych)
 library(corrplot)
 
 #### ELT ####
@@ -9,7 +10,27 @@ data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
 fn_out <- file.path(data_dir, 'working_data/model_second_stage/model_second_stage_training/model_second_stage_gbm_hp.csv')
 dir_cv <- file.path(data_dir, 'working_data/model_second_stage/model_second_stage_training/cv_results')
 list_fn <- list.files(dir_cv, full.names=TRUE)
+fn_hp <- file.path(data_dir, 'working_data/model_second_stage/model_second_stage_training/gbm_raytune_2025_03_21/gbm_grid_2025_03_21.csv')
 
+fn_stats_out <- file.path(data_dir, '/output_data/stats/stats_stage_2.csv')
+fn_splot_out <- file.path(data_dir, '/output_data/stats/splot_stage_2.png')
+fn_boxplot_out <- file.path(data_dir, '/output_data/stats/boxplot_stage_2.png')
+
+
+# Load raytune optuna hyperparameter search; create scatterplot matrix
+HP <-
+	read_csv(fn_hp) %>%
+	select(rank, order, binary_logloss, auc, `config/num_trees`, `config/learning_rate`, `config/min_data_in_leaf`) %>%
+	rename_all(str_replace, 'config/', '')
+HP
+
+
+png(filename=fn_splot_out);  HP %>%
+	select(binary_logloss, auc, num_trees, learning_rate) %>%
+	pairs.panels(., main='Hyperparameter search: Model stage 2'); dev.off()
+
+
+# Check out CV results
 TempCV <- data.frame()
 for (fn in list_fn){
 	TempCV <- TempCV %>% bind_rows(read.csv(fn))
@@ -24,170 +45,51 @@ CV <-
 	left_join(ID, by = c('num_trees', 'min_data_in_leaf', 'learning_rate')) %>%
 	relocate('id')
 
-max(CV$id)
-
-#### QC ####
-# All hyperparameter sets got 5 tests, which is correct
+# QC: All hyperparameter sets got 5 tests, which is correct
 CV %>%
 	count(id) %>% 
 	distinct(n)
 
-#### Analysis ####
-CV %>%
-	select(num_trees, learning_rate, min_data_in_leaf, precision, recall, log_loss, roc_auc) %>%
-	scatterplotMatrix()
-
-CV %>%
-	select(num_trees, learning_rate, min_data_in_leaf, precision, recall, log_loss, roc_auc) %>%
-	cor %>%
-	corrplot(method='number', type = 'lower', diag=FALSE)
-
-# Divvy the data into a handful of points to focus on.
-# Here, i'll take each hyperparameter set's avg precision and recall,
-# plot this in 2d space, and find the distance from 
-# perfect precision and recall (1,1).
-Contenders <-
+# ID #2 looks great to me
+boxplots <-
 	CV %>%
-	select(id, precision, recall) %>%
-	gather(variable, value, -id) %>%
-	group_by(id, variable) %>%
-	summarize(
-		mean = mean(value)
-	) %>%
-	spread(variable, mean) %>%
-	rowwise() %>%
-	mutate(
-		dist = sqrt( 
-			((precision-1)**2) + ((recall-1)**2)
-			)
-	) %>%
-	ungroup %>%
-	mutate(distance_rank = dense_rank(dist)) %>%
-	filter(distance_rank <= 5) %>%
-	rename(mean_precision = precision, mean_recall = recall) %>%
-	select(id, distance_rank, mean_precision, mean_recall)
-
-#### Diagrams ####
-
-# Contenders only: mean
-# Based on mean values, for precision and recall, 
-# model n2 looks great
-CV %>%
-	inner_join(Contenders, by = 'id') %>%
-	select(id, distance_rank, precision, recall, log_loss, roc_auc) %>%
-	mutate(
-		distance_rank = ordered(distance_rank),
-		id = factor(id, ordered = FALSE)
-	) %>%
-	gather(variable, value, -id, -distance_rank) %>%
-	group_by(id, distance_rank, variable) %>%
-	summarize(avg = mean(value)) %>%
-	ungroup %>%
-	ggplot(aes(x = id, color = distance_rank, y = avg)) +
-	geom_point(size = 5) +	
-	scale_color_brewer(palette = 'Spectral', direction = -1) +
-	facet_wrap(~variable, scales = 'free_y') +
-	theme(panel.grid = element_blank())
-	
-
-# Contenders only: full distribution
-# Based now on medians of precision and recall, 
-# model n2 looks great
-CV %>%
 	select(id, precision, recall, log_loss, roc_auc) %>%
-	inner_join(Contenders, by = 'id') %>%
-	select(id, distance_rank, precision, recall, log_loss, roc_auc) %>%
-	gather(variable, value, -id, -distance_rank) %>%
-	mutate_at(c('id', 'distance_rank'), ordered) %>%
-	ggplot(aes(x = id, y = value, group = id, color = distance_rank)) +
+	mutate(
+		id = ordered(id),
+		color = if_else(id == 2L, 'Selected', 'Not selected')
+	) %>%
+	gather(variable, value, -id, -color) %>%
+	ggplot(aes(x = id, y = value, fill = color)) +
 	geom_boxplot() +
-	facet_wrap(~variable, scales = 'free_y') +
-	scale_color_brewer(palette = 'Spectral', direction = -1) +
-	labs(x = 'Hyperparameter set ID', y = '', color = 'Rank', title = 'Best hyperparameters')
-
-CV %>%
-	select(id, precision, recall, log_loss, roc_auc) %>%
-	left_join(Contenders, by = 'id') %>%
-	select(id, distance_rank, precision, recall, log_loss, roc_auc) %>%
-	gather(variable, value, -id, -distance_rank) %>%
-	mutate_at(c('id', 'distance_rank'), ordered) %>%
-	ggplot(aes(x = id, y = value, group = id, color = distance_rank)) +
-	geom_boxplot() +
-	facet_wrap(~variable, scales = 'free_y') +
-	scale_color_brewer(palette = 'Spectral', direction = -1) +
-	labs(x = 'Hyperparameter set ID', y = '', color = 'Rank', title = 'All hyperparameters')
-
-CV %>%
-	select(id, precision, recall, log_loss, roc_auc) %>%
-	left_join(Contenders, by = 'id') %>%
-	select(id, distance_rank, precision, recall, log_loss, roc_auc) %>%
-	gather(variable, value, -id, -distance_rank) %>%
-	group_by(id, distance_rank, variable) %>%
-	summarize(mean_value = mean(value)) %>%
-	ungroup %>%
-	#mutate(distance_rank = replace_na(distance_rank, 99)) %>%
-	mutate_at(c('id', 'distance_rank'), ordered) %>%
-	ggplot(aes(x = id, y = mean_value, group = id, color = distance_rank)) +
-	geom_point() +
-	facet_wrap(~variable, scales = 'free_y') +
-	scale_color_brewer(palette = 'Spectral', direction = -1, na.value = "grey50") +
-	labs(x = 'Hyperparameter set ID', y = 'Mean', color = 'Rank', title = 'Mean values (all hyperparameters)')
-
-# QC-- look at the 2d space, see if these rankings made sense. 
-CV %>%
-	select(id, precision, recall) %>%
-	gather(variable, value, -id) %>%
-	group_by(id, variable) %>%
-	summarize(
-		mean = mean(value)
-	) %>%
-	spread(variable, mean) %>%
-	rowwise() %>%
-	mutate(
-		dist = sqrt( 
-			((precision-1)**2) + ((recall-1)**2)
-		)
-	) %>%
-	ungroup %>%
-	mutate(distance_rank = dense_rank(dist)) %>%
-	rename(mean_precision = precision, mean_recall = recall) %>%
-	select(id, distance_rank, mean_precision, mean_recall) %>%
-	ggplot(aes(x = mean_precision, y = mean_recall, label = id)) +
-	geom_text() 
-
-CV %>%
-	select(id, precision, recall) %>%
-	gather(variable, value, -id) %>%
-	group_by(id, variable) %>%
-	summarize(
-		mean = mean(value)
-	) %>%
-	spread(variable, mean) %>%
-	rowwise() %>%
-	mutate(
-		dist = sqrt( 
-			((precision-1)**2) + ((recall-1)**2)
-		)
-	) %>%
-	ungroup %>%
-	mutate(distance_rank = dense_rank(dist)) %>%
-	rename(mean_precision = precision, mean_recall = recall) %>%
-	select(id, distance_rank, mean_precision, mean_recall) %>%
-	ggplot(aes(x = mean_precision, y = mean_recall, label = id)) +
-	geom_text() +
-	coord_cartesian(xlim = c(0.99, 1), ylim = c(0.994, 1))
+	facet_wrap(~variable, scales = 'free') +
+	scale_fill_manual(values = c('white', 'dodgerblue')) +
+	labs(x = 'Model', y = '', title = 'Cross-validation of model 2', fill = '') +
+	theme(
+		legend.position = 'bottom',
+		axis.ticks.x = element_blank()
+	)
+plot(boxplots)
+ggsave(filename=fn_boxplot_out, plot=boxplots)
+#
 
 #### Export chosen hyperparameters
+# Use model id 2:
+
 # num_trees: 555
 # min_data_in_leaf: 147
 # learning_rate: 0.0144
 CV %>%
-	inner_join(Contenders, by = 'id') %>%
-	filter(distance_rank == 1) %>%
-	distinct(verbose, num_trees, learning_rate, min_data_in_leaf, objective, early_stopping_round)
+	filter(id == 2) %>%
+	distinct(num_trees, learning_rate, min_data_in_leaf, early_stopping_round)
+
+CV %>%
+	filter(id == 2L) %>%
+	select(fold_num, precision, recall, log_loss, roc_auc) %>%
+	write_csv(fn_stats_out)
 
 CV %>%
 	inner_join(Contenders, by = 'id') %>%
 	filter(distance_rank == 1) %>%
 	distinct(num_trees, min_data_in_leaf, learning_rate, early_stopping_round) %>%
 	write_csv(fn_out)
+

@@ -74,7 +74,10 @@ boxplot <-
 	geom_boxplot() +
 	facet_wrap(~variable, scales = 'free') +
 	scale_fill_manual(values = c('white', 'dodgerblue')) +
-	theme(legend.position = 'bottom') +
+	theme(
+		legend.position = 'bottom',
+		axis.ticks.x = element_blank()
+	) +
 	labs(x = 'Model', y = '', title = 'Cross-validation of GBM A', fill = '')
 plot(boxplot)
 ggsave(plot=boxplot, filename=fn_boxplot_out)
@@ -101,7 +104,6 @@ HP %>%
 	rename_all(str_replace, 'config/', '') %>%
 	select(num_trees, learning_rate, min_data_in_leaf) %>%
 	car::scatterplotMatrix()
-
 
 CV %>%
 	filter(hp_rank == 6L) %>%
