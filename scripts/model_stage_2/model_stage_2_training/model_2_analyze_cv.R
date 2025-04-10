@@ -22,11 +22,10 @@ HP <-
 	read_csv(fn_hp) %>%
 	select(rank, order, binary_logloss, auc, `config/num_trees`, `config/learning_rate`, `config/min_data_in_leaf`) %>%
 	rename_all(str_replace, 'config/', '')
-HP
 
 
 png(filename=fn_splot_out);  HP %>%
-	select(binary_logloss, auc, num_trees, learning_rate) %>%
+	select(binary_logloss, auc, num_trees, learning_rate, min_data_in_leaf) %>%
 	pairs.panels(., main='Hyperparameter search: Model stage 2'); dev.off()
 
 
