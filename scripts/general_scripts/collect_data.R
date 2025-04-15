@@ -1,13 +1,7 @@
-# Collect input data from Pudl Sqlite file
-
-# __author__ = "Andrew Bartnof"
-# __copyright__ = "collect_data.R © 2020 by Andrew Bartnof is licensed under CC BY-SA 4.0"
-# __credits__ = ["Andrew Bartnof", "Alex Engel"]
-# __license__ = "CC BY-SA 4.0"
-# __version__ = "1.0"
-# __maintainer__ = "Andrew Bartnof"
-# __email__ = "abartnof.contractor@rmi.org"
-# __status__ = "Production"
+# Collect FERC and EIA tables from the Catalyst Co-op pudl sqlite file
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
 
 library(tidyverse)
 library(skimr)

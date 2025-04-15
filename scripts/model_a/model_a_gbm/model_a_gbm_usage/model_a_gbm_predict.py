@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Iterate through the tranches’ X files, and return a y_fit for each row, using the model A GBM
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[11]:
 
 
@@ -50,7 +58,7 @@ for i in tqdm(FN.index):
     YFit.to_parquet(FN['dir_fn_y_fit'][i])
 
 
-# In[6]:
+# In[13]:
 
 
 get_ipython().system('jupyter nbconvert --to script model_a_gbm_predict.ipynb')

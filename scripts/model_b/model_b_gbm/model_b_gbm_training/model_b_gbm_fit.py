@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Fit model
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[1]:
 
 
@@ -27,6 +35,8 @@ fn_x = os.path.join(dir_working_model_b_training, 'x.parquet')
 fn_y = os.path.join(dir_working_model_b_training, 'y.parquet')
 fn_id = os.path.join(dir_working_model_b_training, 'id.parquet')
 fn_model = os.path.join(dir_working_model_b_training, 'model_b_gbm.txt')
+
+fn_y_fit_1_b_gbm = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/temp/y_fit_1_b_gbm.parquet')
 # dir_hyperparameters = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_b/train'
 # fn_out = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_b/train/gb_ray_tune/grid_search.csv'
 
@@ -40,7 +50,7 @@ def np_cleaning(X):
     return X
 
 
-# In[6]:
+# In[5]:
 
 
 fn_params = os.path.join(dir_working_model_b_training, 'model_b_gbm_hp.csv')
@@ -51,7 +61,7 @@ params['metrics'] = ['binary_logloss', 'auc']
 print(params)
 
 
-# In[10]:
+# In[6]:
 
 
 # param_dict = {
@@ -83,7 +93,7 @@ XClean = standard_scaler.transform(X)
 XClean = np_cleaning(XClean)
 
 
-# In[ ]:
+# In[9]:
 
 
 train_set = lgb.Dataset(XClean, Y)
@@ -93,13 +103,20 @@ gbm = lgb.train(
     )
 
 
-# In[ ]:
+# In[10]:
 
 
 gbm.save_model(fn_model)
 
 
-# In[41]:
+# In[11]:
+
+
+y_fit = gbm.predict(XClean)
+pd.DataFrame(y_fit).rename(columns={0:'y_fit_1_b_gbm'}).to_parquet(fn_y_fit_1_b_gbm)
+
+
+# In[12]:
 
 
 # Optional: view the feature importances
@@ -107,7 +124,7 @@ gbm.save_model(fn_model)
 #              'name':X.columns}).plot.barh(x='name', y='importance', figsize=[8, 10])
 
 
-# In[ ]:
+# In[11]:
 
 
 get_ipython().system('jupyter nbconvert --to script model_b_gbm_fit.ipynb')

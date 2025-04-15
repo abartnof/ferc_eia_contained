@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Perform an initial search for optimal hyperparameters
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[1]:
 
 
@@ -144,7 +152,7 @@ def fit_mod(space):
 tuner = tune.Tuner(
     fit_mod,
     tune_config=tune.TuneConfig(
-        num_samples=250,
+        num_samples=1,
         search_alg=search_alg,
     ),
     param_space=space,

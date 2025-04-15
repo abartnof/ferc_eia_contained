@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Split and prepare the input data for the models
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # Steps here:
 # - Subset training data to 2/5 of the folds
 # - fit all four first-order models on this 2/5
 # - Subsequently, we'll need to train a GBM model on 2/5 of the (remaining) folds, and to test on the last 1/5
 #     - These training and testing sets for the second-tier model will need the __feature-engineered__ input X files for each model (A and B), as well as the __y-fit__ for each of the input models (A, B x ANN, GBM). Also, add __descending-rank__ for each prediction, where 1.0 is 1
-#     - It's easier if we pre-process this bit, and save these training and testing sets in a 'temp folder', and then in a second script...
-#       
-# Near future steps:
-# - use raytune, get 250 models
-# - Repeat, using more/less of the original data, as a sensitivity test
+#     - It's easier if we pre-process this bit, and save these training and testing sets in a 'temp folder', and then in a second script, search for hyperparameters
 
 # In[1]:
 

@@ -1,21 +1,8 @@
-#-------------------------------------------------------------------------------
-# clean_positive_matches.R
-
-# Perform light data cleaning on Catalyst Coöp's training data;
-# remove unneeded columns from matching table, and remove problematic rows.
-# Note the report year for these matches.
-
-# Author: Andrew Bartnof, for RMI
-# Email: abartnof.contractor@rmi.org
-# 2024
-
-# input: 
-# 	CC PUDL training data
-# 	EIA plant parts
-#   FERC Steam
-# output: 
-# 	positive_matches.RDS
-#-------------------------------------------------------------------------------
+# Load the ground-truth mappings from FERC:EIA; 
+# ensure that every row in it is something that we can use in this model
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
 
 library(tidyverse)
 library(skimr)

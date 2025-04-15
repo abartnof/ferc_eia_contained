@@ -1,3 +1,9 @@
+# Iterate through the y-fit values from models a and b, to see how much 
+# they (dis)agree with each other
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
+
 library(tidyverse)
 library(skimr)
 library(arrow)

@@ -1,3 +1,8 @@
+# Feature engineering
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
+
 #### Source functions ####
 dir_scripts <- '~/Documents/rmi/rematch_ferc_eia_pixi/ferc_eia/scripts/model_b'
 fn_functions <- file.path(dir_scripts, 'model_b_feature_engineering_functions.R')

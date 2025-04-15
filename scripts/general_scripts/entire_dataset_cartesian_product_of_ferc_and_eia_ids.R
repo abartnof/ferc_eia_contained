@@ -1,12 +1,9 @@
-# entire_dataset_cartesian_product_of_ferc_and_eia_ids.R
-# Andrew Bartnof
-# RMI, 2024
-
-# Create a framework of each ferc record and eia record that will be compared. 
-# This mirrors `create_matches_and_mismatches.R`. 
-# Break this up into smaller files. Save on external hard drive. 
-# Note that for now, this subsets to only 20 FERC records per year
-
+# For each FERC observation in a given year, note every EIA observation that it 
+# could hypothetically be mapped onto; constrain these mappings only by 
+# blocking by year
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
 
 library(tidyverse)
 library(skimr)

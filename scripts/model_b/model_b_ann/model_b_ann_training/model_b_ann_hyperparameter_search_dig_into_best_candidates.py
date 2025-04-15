@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Perform cross-validation to dig into the most promising hyperparameters
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[2]:
 
 
@@ -14,13 +22,12 @@ from tensorflow.keras.backend import clear_session
 from tensorflow import convert_to_tensor
 
 from ray import train, tune
-from ray.tune.search.optuna import OptunaSearch
-from ray.tune.search import ConcurrencyLimiter
+# from ray.tune.search.optuna import OptunaSearch
+# from ray.tune.search import ConcurrencyLimiter
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, log_loss
 
 from tqdm import tqdm
-# from tqdm.notebook import tqdm
 
 
 # In[10]:
@@ -30,6 +37,7 @@ data_dir = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
 dir_working_model_b_training = os.path.join(data_dir, 'working_data/model_b/model_b_training')
 
 
+# In[11]:
 
 
 fn_x = os.path.join(dir_working_model_b_training, 'x.parquet')
@@ -40,6 +48,10 @@ dir_hyperparameters = dir_working_model_b_training
 fn_hp = os.path.join(dir_working_model_b_training, 'ann_ray_tune/model_b_ann_hp_search.csv')
 fn_history = os.path.join(dir_working_model_b_training, 'ann_ray_tune/history_cross_validation_of_best_candidates_ann.csv')
 fn_metrics = os.path.join(dir_working_model_b_training, 'ann_ray_tune/metrics_cross_validation_of_best_candidates_ann.csv')
+
+
+# In[13]:
+
 
 def np_cleaning(X):
     X = np.clip(X, a_min=-3, a_max=3)
@@ -172,7 +184,7 @@ for (hp_rank, fold) in tqdm(list(itertools.product(*variables))):
 CollectedHistory = pd.concat(history_list)
 CollectedHistory.reset_index(drop=True, inplace=True)
 CollectedHistory.to_csv(fn_history, index=False)
-#CollectedHistory
+CollectedHistory
 
 
 # In[20]:
@@ -181,7 +193,7 @@ CollectedHistory.to_csv(fn_history, index=False)
 CollectedMetrics = pd.concat(metrics_list).reset_index()
 CollectedMetrics.drop('index',axis=1, inplace=True)
 CollectedMetrics.to_csv(fn_metrics, index=False)
-#CollectedMetrics
+CollectedMetrics
 
 
 # In[21]:

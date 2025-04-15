@@ -1,3 +1,9 @@
+# Analyze the previously collected analytical data comparing the y-fits 
+# from models a and b
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
+
 library(tidyverse)
 library(skimr)
 library(arrow)

@@ -1,9 +1,9 @@
-# PERFORM ALL OF THE PREDICTABLE COMPARISONS THAT WILL 
-# UNDERLIE MODEL B'S INPUT DATA.
+# Perform all of the metrics comparisons that will be 
+# noted in the feature engineering
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
 
-# When comparing FERC to EIA values, there are many comparisons that can be
-# completed once, canonically, instead of many times on-the-fly. This will
-# make feature engineering much less computationally expensive.
 
 # PART 1, FERC VALUES PER SE:
 

@@ -1,9 +1,7 @@
-# Create the data that the model_generator_id will train on/predict on,
-# using all the upstream prev. created helper tables
-
-# TODO: When we were selecting between models, the final value scaling, and 
-# replacing NAs with 0.0, was done in python as part of a pipeline. For the final
-# version of this script, this will have to be done in this script.
+# Establish functions to be sourced for feature engineering
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
 
 # PER SE
 # is_100%: if the plant_name_ferc1 contains a %, indicate if it's at 100%

@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Perform an initial search for optimal hyperparameters
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[1]:
 
 
@@ -142,13 +150,13 @@ tuner = tune.Tuner(
 results = tuner.fit()
 
 
-# In[21]:
+# In[28]:
 
 
 Grid = results.get_dataframe().copy()
 
 
-# In[22]:
+# In[29]:
 
 
 Grid.index.name = 'order'
@@ -157,7 +165,7 @@ RankedGrid.index.name = 'rank'
 RankedGrid.to_csv(fn_out)
 
 
-# In[25]:
+# In[30]:
 
 
 RankedGrid.sort_values('binary_logloss').head(20)[['binary_logloss', 'auc', 'config/num_trees', 'config/learning_rate', 'config/min_data_in_leaf']]
@@ -177,8 +185,8 @@ RankedGrid.sort_values('binary_logloss').head(20)[['binary_logloss', 'auc', 'con
 # restored_tuner.get_results().get_dataframe().to_csv(fn_results)
 
 
-# In[14]:
+# In[27]:
 
 
-# !jupyter nbconvert --to script model_a_hyperparameter_search.ipynb
+get_ipython().system('jupyter nbconvert --to script model_a_gbm_hyperparameter_search.ipynb')
 

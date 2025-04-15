@@ -1,3 +1,8 @@
+# Analyze the goodness-of-fit metrics from the cross-validation
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
+
 library(tidyverse)
 library(skimr)
 # library(car)

@@ -1,3 +1,9 @@
+# Choose which hyperparameters from the cross-validation 
+# to use for the final model
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
+
 library(tidyverse)
 library(skimr)
 library(psych)

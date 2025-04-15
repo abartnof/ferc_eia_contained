@@ -1,23 +1,7 @@
-#-------------------------------------------------------------------------------
-# feature_engineering_hyperparameter_search.R
-# 
-# Within the full neural network pipeline, 
-# prepare the training/testing datasets necessary for a hyperparameter search.
-# 
-# Author: Andrew Bartnof, for RMI
-# Email: abartnof.contractor@rmi.org
-# 2024
-# 
-# input: 
-# 	all_joined_data.parquet
-# output: 
-
-#		FOR MODELS:
-#		y.parquet
-# 	x.parquet
-
-# 	validation_x.parquet
-#-------------------------------------------------------------------------------
+# Establish functions to be sourced for feature engineering
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
 
 library(tidyverse)
 library(recipes)

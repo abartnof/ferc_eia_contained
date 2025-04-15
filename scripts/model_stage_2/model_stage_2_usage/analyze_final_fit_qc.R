@@ -1,3 +1,8 @@
+# perform manual QC on the mappings
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
+
 library(tidyverse)
 library(arrow)
 library(skimr)

@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Iterate through the tranches’ X files, and return a y_fit for each row, using the model B GBM
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[1]:
 
 
@@ -40,7 +48,7 @@ fn_model = os.path.join(data_dir, 'working_data/model_b/model_b_training/model_b
 model = lgb.Booster(model_file=fn_model)
 
 
-# In[ ]:
+# In[4]:
 
 
 for i in tqdm(FN.index):

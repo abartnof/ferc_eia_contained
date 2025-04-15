@@ -1,30 +1,12 @@
-#-------------------------------------------------------------------------------
-# create_matches_and_mismatches.R
-
-# We already know the 'ground truth' mapping for FERC:EIA (ie positive matches).
-# Now, show that the other EIA values for that year could not have matched 
-# to that FERC value. 
-# NB this script is currently the deciding factor for how large the 
-# training data will be.
-
-# input: 
-# 	eia_ferc1_train.RDS
-# 	eia_plant_parts
-# 	FERC1
-# output:
-# 	matches_and_mismatches.parquet
-
-# Author: Andrew Bartnof, for RMI
-# Email: abartnof.contractor@rmi.org
-# 2024
-
-#-------------------------------------------------------------------------------
+# First step in creating training dataset: 
+# for each ‘ground-truth’ mapping, note several thousand non-valid mappings
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
 
 library(tidyverse)
 library(dtplyr)
 library(arrow)
-# library(skimr)
-# library(stringdist)
 set.seed(1)
 
 data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'

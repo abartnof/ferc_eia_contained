@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# # Fit model
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
+# In[1]:
 
 
 import lightgbm as lgb
@@ -12,7 +20,7 @@ import os
 from sklearn.preprocessing import StandardScaler
 
 
-# In[4]:
+# In[2]:
 
 
 data_dir = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker'
@@ -20,7 +28,7 @@ dir_working_model_a_training = os.path.join(data_dir, 'working_data/model_a/mode
 dir_working_model_a_training
 
 
-# In[5]:
+# In[3]:
 
 
 fn_x = os.path.join(dir_working_model_a_training, 'x.parquet')
@@ -31,7 +39,13 @@ fn_model = os.path.join(dir_working_model_a_training, 'model_a_gbm.txt')
 # fn_out = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/gb_ray_tune/grid_search.csv'
 
 
-# In[6]:
+# In[4]:
+
+
+fn_y_fit_1_a_gbm = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/temp/y_fit_1_a_gbm.parquet')
+
+
+# In[5]:
 
 
 def np_cleaning(X):
@@ -40,7 +54,7 @@ def np_cleaning(X):
     return X
 
 
-# In[16]:
+# In[6]:
 
 
 fn_params = os.path.join(dir_working_model_a_training, 'model_a_gbm_hp.csv')
@@ -51,7 +65,7 @@ params['metrics'] = ['binary_logloss', 'auc']
 print(params)
 
 
-# In[17]:
+# In[7]:
 
 
 # param_dict = {
@@ -64,7 +78,7 @@ print(params)
 # }
 
 
-# In[ ]:
+# In[8]:
 
 
 X = pd.read_parquet(fn_x)
@@ -83,7 +97,7 @@ XClean = standard_scaler.transform(X)
 XClean = np_cleaning(XClean)
 
 
-# In[11]:
+# In[10]:
 
 
 train_set = lgb.Dataset(XClean, Y)
@@ -93,10 +107,22 @@ gbm = lgb.train(
     )
 
 
-# In[22]:
+# In[21]:
 
 
 gbm.save_model(fn_model)
+
+
+# In[11]:
+
+
+y_fit = gbm.predict(XClean)
+
+
+# In[15]:
+
+
+pd.DataFrame(y_fit).rename(columns={0:'y_fit_1_a_gbm'}).to_parquet(fn_y_fit_1_a_gbm)
 
 
 # In[41]:
@@ -107,8 +133,8 @@ gbm.save_model(fn_model)
 #              'name':X.columns}).plot.barh(x='name', y='importance', figsize=[8, 10])
 
 
-# In[42]:
+# In[22]:
 
 
-# !jupyter nbconvert --to script model_a_gbm_fit.ipynb
+get_ipython().system('jupyter nbconvert --to script model_a_gbm_fit.ipynb')
 

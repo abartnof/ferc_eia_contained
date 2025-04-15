@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Perform an initial search for optimal hyperparameters
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[1]:
 
 
@@ -126,7 +134,7 @@ search_alg = OptunaSearch(metric="binary_logloss", mode="min")
 search_alg = ConcurrencyLimiter(search_alg, max_concurrent=1)
 
 
-# In[ ]:
+# In[8]:
 
 
 tuner = tune.Tuner(
@@ -145,13 +153,13 @@ tuner = tune.Tuner(
 results = tuner.fit()
 
 
-# In[ ]:
+# In[15]:
 
 
 Grid = results.get_dataframe().copy()
 
 
-# In[ ]:
+# In[16]:
 
 
 Grid.index.name = 'order'
@@ -160,28 +168,34 @@ RankedGrid.index.name = 'rank'
 RankedGrid.to_csv(fn_out)
 
 
-# In[ ]:
+# In[17]:
 
 
 RankedGrid.sort_values('binary_logloss').head(10)[['binary_logloss', 'auc', 'config/num_trees', 'config/learning_rate', 'config/min_data_in_leaf']]
 
 
-# In[ ]:
+# In[18]:
 
 
 # experiment_path = "/Users/andrewbartnof/Documents/rmi/rematch_ferc_eia1/clean_data/model_full_gradient_boost/ray_tune/gb_ray_tune"
 # restored_tuner = tune.Tuner.restore(experiment_path, trainable=fit_mod)
 
 
-# In[ ]:
+# In[19]:
 
 
 # fn_results = '/Users/andrewbartnof/Documents/rmi/rematch_ferc_eia1/clean_data/model_full_gradient_boost/ray_tune/ray_tune_dataframe.csv'
 # restored_tuner.get_results().get_dataframe().to_csv(fn_results)
 
 
+# In[21]:
+
+
+get_ipython().system('jupyter nbconvert --to script model_b_gbm_hyperparameter_search.ipynb')
+
+
 # In[ ]:
 
 
-# !jupyter nbconvert --to script model_b_gbm_hyperparameter_search.ipynb
+
 

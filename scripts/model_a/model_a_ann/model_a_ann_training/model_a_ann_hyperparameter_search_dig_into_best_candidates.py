@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Perform cross-validation to dig into the most promising hyperparameters
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[2]:
 
 
@@ -42,6 +50,27 @@ dir_hyperparameters = dir_working_model_a_training
 fn_hp = os.path.join(dir_working_model_a_training, 'ann_ray_tune/model_a_ann_hp_search.csv')
 fn_history = os.path.join(dir_working_model_a_training, 'ann_ray_tune/history_cross_validation_of_best_candidates_ann.csv')
 fn_metrics = os.path.join(dir_working_model_a_training, 'ann_ray_tune/metrics_cross_validation_of_best_candidates_ann.csv')
+
+
+# In[12]:
+
+
+# working_dir = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/
+# 'model_a/train/x.parquet'
+# # os.path.join('C:\Users\A\Desktop\Repo', filename)
+
+# fn_x = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/x.parquet'
+# fn_y = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/y.parquet'
+# fn_id = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/id.parquet'
+
+# # dir_hyperparameters = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train'
+# fn_grid = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/ann/grid_search.csv'
+# fn_history = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/ann/history_cross_validation_of_best_candidates_ann.csv'
+# fn_metrics = '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/working_data/model_a/train/ann/metrics_cross_validation_of_best_candidates_ann.csv'
+
+
+# In[13]:
+
 
 def np_cleaning(X):
     X = np.clip(X, a_min=-3, a_max=3)

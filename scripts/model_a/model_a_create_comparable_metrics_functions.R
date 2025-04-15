@@ -1,55 +1,12 @@
-#-------------------------------------------------------------------------------
-# model_a_train__create_training_data_comparable_metrics.R
-
-# For any EIA/FERC metrics that should be compared,
-# (eg we want the ratio of two numbers, the difference, etc), 
-# pre-compute them here.
-# For any strings that should be compared, compare them two ways:
-# as the full strings, and with stopwords (established and) removed
-
-# input: 
-# ferc_steam.RDS
-# ferc_utilities.RDS
-# eia_plant_parts.RDS
-# matches_and_mismatches.parquet
-# output:
-# stop_words_plant_name.csv
-# stop_words_utility.csv
-# all_joined_data.parquet
-
-# Author: Andrew Bartnof, for RMI
-# Email: abartnof.contractor@rmi.org
-# 2024
-
-#-------------------------------------------------------------------------------
+# Establish functions to be sourced when comparing easily-comparable metrics
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
 
 library(arrow)
 library(dtplyr)
-# library(skimr)
 library(stringdist)
 library(tidyverse)
-
-# data_dir <- '/Volumes/Extreme SSD/rematch_eia_ferc1_docker/'
-# dir_input <- file.path(data_dir, '/input_data/')
-# dir_working <- file.path(data_dir, '/working_data/')
-# dir_working_model_a_training <- file.path(
-# 	data_dir, 
-# 	'/working_data/model_a/model_a_training/'
-# )
-# 
-# fn_eia_plant_parts <- file.path(dir_input, 'eia_plant_parts.RDS')
-# fn_ferc_steam <- file.path(dir_input, 'ferc_steam.RDS')
-# fn_ferc_utilities <- file.path(dir_input, 'ferc_utilities.RDS')
-# fn_matches_and_mismatches <- file.path(dir_working, 'matches_and_mismatches.parquet')
-# 
-# fn_all_joined_data <- file.path(dir_working_model_a_training, 'all_joined_data.parquet')
-# fn_stop_words_plant_name <- file.path(dir_working_model_a_training, 'stop_words_plant_name.csv')
-# fn_stop_words_utility_name <- file.path(dir_working_model_a_training, 'stop_words_utility.csv')
-
-# FercSteam <- readRDS(fn_ferc_steam) %>% lazy_dt
-# FercUtilities <- readRDS(fn_ferc_utilities) %>% lazy_dt
-# EiaPlantParts <- readRDS(fn_eia_plant_parts) %>% lazy_dt
-# Combos <- read_parquet(fn_matches_and_mismatches) %>% lazy_dt
 
 #### Define functions ####
 get_comparable_scalars <- function(Combos, FercSteam, EiaPlantParts){

@@ -1,6 +1,7 @@
-# Run the functions to create the comparable metrics, as sourced
-# from another file
-# version: training data
+# Feature engineering
+# author: Andrew Bartnof
+# copyright: Copyright 2025, Rocky Mountain Institute
+# credits: Alex Engel, Andrew Bartnof
 
 # Use these locations to make the script work on your machine
 dir_scripts <- '~/Documents/rmi/rematch_ferc_eia_pixi/ferc_eia/scripts/'

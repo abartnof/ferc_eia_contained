@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Perform cross-validation on the best options returned by the hyperparameter search
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # Stage 1 hyperparameters:
 # - These are a 'fait accompli', and the hyperparameters need only be loaded.
 # 
@@ -55,7 +63,7 @@ dir_out = os.path.join(data_dir, 'working_data/model_second_stage/model_second_s
 
 fn_hp2 = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/gbm_raytune_2025_03_21/gbm_grid_2025_03_21.csv')
 HP2 = pd.read_csv(fn_hp2)
-HP2 = HP2.loc[ HP2['rank'] < 10 ]
+HP2 = HP2.loc[ HP2['rank'] < 5 ]
 HP2 = HP2.set_index('rank', drop=True)
 HP2 = HP2[['config/verbose', 'config/num_trees', 'config/learning_rate', 'config/min_data_in_leaf', 'config/objective', 'config/early_stopping_round', 'config/metrics']]
 HP2 = HP2.rename(columns=lambda x: re.sub('^config/','',x))

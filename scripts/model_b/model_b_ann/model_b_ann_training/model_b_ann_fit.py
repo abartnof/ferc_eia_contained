@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Fit model
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[1]:
 
 
@@ -38,6 +46,13 @@ fn_model = os.path.join(dir_working_model_b_training, 'model_b_ann.keras')
 # In[4]:
 
 
+fn_x_1_b_out = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/temp/x_1_b.parquet')
+fn_y_fit_1_b_ann = os.path.join(data_dir, 'working_data/model_second_stage/model_second_stage_training/temp/y_fit_1_b_ann.parquet')
+
+
+# In[5]:
+
+
 def np_cleaning(X):
     X = np.clip(X, a_min=-3, a_max=3)
     X = np.nan_to_num(X, nan=0.0, posinf=0.0, neginf=0.0)
@@ -55,7 +70,7 @@ params = {k:params[k][0] for k in params.keys()}
 print(params)
 
 
-# In[5]:
+# In[7]:
 
 
 # params = {
@@ -67,7 +82,7 @@ print(params)
 # }
 
 
-# In[7]:
+# In[8]:
 
 
 X = pd.read_parquet(fn_x)
@@ -75,7 +90,7 @@ Y = pd.read_parquet(fn_y)
 ID = pd.read_parquet(fn_id)
 
 
-# In[8]:
+# In[9]:
 
 
 # This is all done automagically by the R script that creates the new data tranches.
@@ -84,10 +99,13 @@ standard_scaler = StandardScaler()
 standard_scaler.fit(X)
 XClean = standard_scaler.transform(X)
 XClean = np_cleaning(XClean)
+
+pd.DataFrame(XClean).to_parquet(fn_x_1_b_out)
+
 XClean = convert_to_tensor(XClean)
 
 
-# In[ ]:
+# In[10]:
 
 
 clear_session()
@@ -113,10 +131,22 @@ history = model.fit(
 )
 
 
-# In[ ]:
+# In[11]:
 
 
 model.save(fn_model)
+
+
+# In[13]:
+
+
+y_fit = model.predict(XClean)
+
+
+# In[14]:
+
+
+pd.DataFrame(y_fit).rename(columns={0:'y_fit_1_b_ann'}).to_parquet(fn_y_fit_1_b_ann)
 
 
 # In[ ]:

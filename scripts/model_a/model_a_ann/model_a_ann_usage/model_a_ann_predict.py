@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Iterate through the tranches’ X files, and return a y_fit for each row, using the model A ANN
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # In[38]:
 
 
@@ -15,7 +23,7 @@ from tensorflow import convert_to_tensor
 from glob import glob
 
 # from sklearn.preprocessing import StandardScaler
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 # utils.set_random_seed(1)
 
 
@@ -59,7 +67,7 @@ for i in tqdm(FN.index):
 
 
 
-# In[39]:
+# In[1]:
 
 
 get_ipython().system('jupyter nbconvert --to script model_a_ann_predict.ipynb')

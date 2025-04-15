@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Fit the stage 2 model
+# 
+# __author__: Andrew Bartnof
+# 
+# __copyright__: Copyright 2025, Rocky Mountain Institute
+# 
+# __credits__: Alex Engel, Andrew Bartnof
+
 # Fit the final model, export model and feature importances
 
 # In[1]:
@@ -89,6 +97,14 @@ YFit1BAnn = elt_y_fit(fn_y_fit=fn_y_fit_1_b_ann, ID=ID).reset_index(drop=True)
 YFit1BGbm = elt_y_fit(fn_y_fit=fn_y_fit_1_b_gbm, ID=ID).reset_index(drop=True)
 
 
+# The input for this model should look like this:
+# - X encoding A
+# - X encoding B
+# - y-fit, y-fit ranks from ANN A
+# - y-fit, y-fit ranks from GBM A
+# - y-fit, y-fit ranks from ANN B
+# - y-fit, y-fit ranks from GBM B
+
 # In[8]:
 
 
@@ -133,7 +149,7 @@ pd.DataFrame(y_fit).rename(columns={0:'y_fit_2'}).to_parquet(fn_y_fit_2_out)
 pd.DataFrame({'colnames':X2.columns.to_series(), 'feature_importance':mod2.feature_importance()}).reset_index(drop=True).to_csv(fn_mod2_feature_importance, index=False)
 
 
-# In[66]:
+# In[13]:
 
 
 get_ipython().system('jupyter nbconvert --to script fit_second_stage_model_gbm.ipynb')
