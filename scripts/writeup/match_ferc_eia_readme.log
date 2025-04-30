@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.5.2)  30 APR 2025 09:35
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.5.2)  30 APR 2025 09:37
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -101,9 +101,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 (/usr/local/texlive/2021basic/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
-)) [1
-
-{/usr/local/texlive/2021basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+))
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <12> on input line 11.
 LaTeX Font Info:    External font `cmex10' loaded for size
@@ -120,80 +118,82 @@ Underfull \hbox (badness 10000) in paragraph at lines 17--17
 -forms/form-1-1-f-3-q-
  []
 
-[2]
+[1
+
+{/usr/local/texlive/2021basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 Overfull \hbox (1.70557pt too wide) in paragraph at lines 51--55
 []\OT1/cmr/m/n/10 For our FERC and EIA in-put files, we use the Catalist-Coop P
 UDL datasets[].
  []
 
-[3]
-<splot_a_ann.png, id=21, 481.8pt x 481.8pt>
+[2]
+<splot_a_ann.png, id=18, 481.8pt x 481.8pt>
 File: splot_a_ann.png Graphic file (type png)
 <use splot_a_ann.png>
 Package pdftex.def Info: splot_a_ann.png  used on input line 91.
 (pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
- [4]
-<splot_a_gbm.png, id=26, 481.8pt x 481.8pt>
+ [3]
+<splot_a_gbm.png, id=23, 481.8pt x 481.8pt>
 File: splot_a_gbm.png Graphic file (type png)
 <use splot_a_gbm.png>
 Package pdftex.def Info: splot_a_gbm.png  used on input line 98.
 (pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
- [5 <./splot_a_ann.png>]
-<boxplot_a_ann.png, id=31, 2864.7025pt x 2646.88875pt>
+ [4 <./splot_a_ann.png>]
+<boxplot_a_ann.png, id=28, 2864.7025pt x 2646.88875pt>
 File: boxplot_a_ann.png Graphic file (type png)
 <use boxplot_a_ann.png>
 Package pdftex.def Info: boxplot_a_ann.png  used on input line 105.
 (pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
- [6 <./splot_a_gbm.png>]
-<boxplot_a_gbm.png, id=36, 2864.7025pt x 2646.88875pt>
+ [5 <./splot_a_gbm.png>]
+<boxplot_a_gbm.png, id=33, 2864.7025pt x 2646.88875pt>
 File: boxplot_a_gbm.png Graphic file (type png)
 <use boxplot_a_gbm.png>
 Package pdftex.def Info: boxplot_a_gbm.png  used on input line 112.
 (pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
- [7 <./boxplot_a_ann.png>]
-<splot_b_ann.png, id=42, 481.8pt x 481.8pt>
+ [6 <./boxplot_a_ann.png>]
+<splot_b_ann.png, id=38, 481.8pt x 481.8pt>
 File: splot_b_ann.png Graphic file (type png)
 <use splot_b_ann.png>
 Package pdftex.def Info: splot_b_ann.png  used on input line 123.
 (pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
- [8 <./boxplot_a_gbm.png>]
-<splot_b_gbm.png, id=47, 481.8pt x 481.8pt>
+ [7 <./boxplot_a_gbm.png>]
+<splot_b_gbm.png, id=44, 481.8pt x 481.8pt>
 File: splot_b_gbm.png Graphic file (type png)
 <use splot_b_gbm.png>
 Package pdftex.def Info: splot_b_gbm.png  used on input line 130.
 (pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
- [9 <./splot_b_ann.png>]
-<boxplot_b_ann.png, id=52, 2864.7025pt x 2646.88875pt>
+ [8 <./splot_b_ann.png>]
+<boxplot_b_ann.png, id=49, 2864.7025pt x 2646.88875pt>
 File: boxplot_b_ann.png Graphic file (type png)
 <use boxplot_b_ann.png>
 Package pdftex.def Info: boxplot_b_ann.png  used on input line 137.
 (pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
- [10 <./splot_b_gbm.png>]
-<boxplot_b_gbm.png, id=57, 2864.7025pt x 2646.88875pt>
+ [9 <./splot_b_gbm.png>]
+<boxplot_b_gbm.png, id=54, 2864.7025pt x 2646.88875pt>
 File: boxplot_b_gbm.png Graphic file (type png)
 <use boxplot_b_gbm.png>
 Package pdftex.def Info: boxplot_b_gbm.png  used on input line 144.
 (pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
 
-[11 <./boxplot_b_ann.png>]
-<median_pearsons_cor.png, id=62, 481.8pt x 481.8pt>
+[10 <./boxplot_b_ann.png>]
+<median_pearsons_cor.png, id=59, 481.8pt x 481.8pt>
 File: median_pearsons_cor.png Graphic file (type png)
 <use median_pearsons_cor.png>
 Package pdftex.def Info: median_pearsons_cor.png  used on input line 163.
 (pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
- [12 <./boxplot_b_gbm.png>]
-<splot_stage_2.png, id=67, 481.8pt x 481.8pt>
+ [11 <./boxplot_b_gbm.png>]
+<splot_stage_2.png, id=64, 481.8pt x 481.8pt>
 File: splot_stage_2.png Graphic file (type png)
 <use splot_stage_2.png>
 Package pdftex.def Info: splot_stage_2.png  used on input line 171.
 (pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
- [13 <./median_pearsons_cor.png>]
-<boxplot_stage_2.png, id=73, 2864.7025pt x 2646.88875pt>
+ [12 <./median_pearsons_cor.png>]
+<boxplot_stage_2.png, id=69, 2864.7025pt x 2646.88875pt>
 File: boxplot_stage_2.png Graphic file (type png)
 <use boxplot_stage_2.png>
 Package pdftex.def Info: boxplot_stage_2.png  used on input line 178.
 (pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
- [14 <./splot_stage_2.png>]
+ [13 <./splot_stage_2.png>]
 
 LaTeX Warning: No positions in optional float specifier.
                Default added (so using `tbp') on input line 194.
@@ -203,16 +203,7 @@ Overfull \hbox (684.91043pt too wide) in paragraph at lines 196--260
 [][] 
  []
 
-[15 <./boxplot_stage_2.png>] [16]
-
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 302.
-
-
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 314.
-
-[17] [18] (./match_ferc_eia_readme.aux)
+[14 <./boxplot_stage_2.png>] [15] [16] [17] (./match_ferc_eia_readme.aux)
 
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
@@ -220,7 +211,7 @@ LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 Here is how much of TeX's memory you used:
  1337 strings out of 480445
  20650 string characters out of 5892392
- 364067 words of memory out of 5000000
+ 364069 words of memory out of 5000000
  18631 multiletter control sequences out of 15000+600000
  408368 words of font info for 43 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
@@ -238,10 +229,10 @@ xmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2021basic/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2021basi
 c/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2021ba
 sic/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on match_ferc_eia_readme.pdf (18 pages, 1676318 bytes).
+Output written on match_ferc_eia_readme.pdf (17 pages, 1676122 bytes).
 PDF statistics:
- 134 PDF objects out of 1000 (max. 8388607)
- 79 compressed objects within 1 object stream
+ 131 PDF objects out of 1000 (max. 8388607)
+ 77 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  56 words of extra memory for PDF output out of 10000 (max. 10000000)
 
