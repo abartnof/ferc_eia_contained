@@ -1,0 +1,244 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.5.2)  29 APR 2025 17:54
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**match_ferc_eia_readme.tex
+(./match_ferc_eia_readme.tex
+LaTeX2e <2020-10-01> patch level 4
+L3 programming layer <2021-02-18>
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2020/04/10 v1.4m Standard LaTeX file (size option)
+)
+\c@part=\count179
+\c@section=\count180
+\c@subsection=\count181
+\c@subsubsection=\count182
+\c@paragraph=\count183
+\c@subparagraph=\count184
+\c@figure=\count185
+\c@table=\count186
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen138
+)
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2020/09/09 v1.2b Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks15
+)
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2020/08/30 v1.4c Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 105.
+
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2020/10/05 v1.2a Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen139
+\Gin@req@width=\dimen140
+)
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count187
+\float@exts=\toks16
+\float@box=\box47
+\@float@everytoks=\toks17
+\@floatcapt=\box48
+)
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/l3backend/l3backend-pdftex.d
+ef
+File: l3backend-pdftex.def 2021-03-18 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count188
+\l__pdf_internal_box=\box49
+) (./match_ferc_eia_readme.aux)
+\openout1 = `match_ferc_eia_readme.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 6.
+LaTeX Font Info:    ... okay on input line 6.
+
+(/usr/local/texlive/2021basic/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count189
+\scratchdimen=\dimen141
+\scratchbox=\box50
+\nofMPsegments=\count190
+\nofMParguments=\count191
+\everyMPshowfont=\toks18
+\MPscratchCnt=\count192
+\MPscratchDim=\dimen142
+\MPnumerator=\count193
+\makeMPintoPDFobject=\count194
+\everyMPtoPDFconversion=\toks19
+)
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.s
+ty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(/usr/local/texlive/2021basic/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 11.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 11.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 11.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 17.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 17.
+
+Underfull \hbox (badness 10000) in paragraph at lines 17--17
+[][]\OT1/cmr/m/n/8 https://www.ferc.gov/general-information-0/electric-industry
+-forms/form-1-1-f-3-q-
+ []
+
+[1
+
+{/usr/local/texlive/2021basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+Overfull \hbox (1.70557pt too wide) in paragraph at lines 42--46
+[]\OT1/cmr/m/n/10 For our FERC and EIA in-put files, we use the Catalist-Coop P
+UDL datasets[].
+ []
+
+[2]
+<splot_a_ann.png, id=18, 481.8pt x 481.8pt>
+File: splot_a_ann.png Graphic file (type png)
+<use splot_a_ann.png>
+Package pdftex.def Info: splot_a_ann.png  used on input line 82.
+(pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
+<splot_a_gbm.png, id=20, 481.8pt x 481.8pt>
+File: splot_a_gbm.png Graphic file (type png)
+<use splot_a_gbm.png>
+Package pdftex.def Info: splot_a_gbm.png  used on input line 89.
+(pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
+ [3 <./splot_a_ann.png>]
+<boxplot_a_ann.png, id=25, 2864.7025pt x 2646.88875pt>
+File: boxplot_a_ann.png Graphic file (type png)
+<use boxplot_a_ann.png>
+Package pdftex.def Info: boxplot_a_ann.png  used on input line 96.
+(pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
+ [4 <./splot_a_gbm.png>]
+<boxplot_a_gbm.png, id=30, 2864.7025pt x 2646.88875pt>
+File: boxplot_a_gbm.png Graphic file (type png)
+<use boxplot_a_gbm.png>
+Package pdftex.def Info: boxplot_a_gbm.png  used on input line 103.
+(pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
+ [5 <./boxplot_a_ann.png>]
+<splot_b_ann.png, id=35, 481.8pt x 481.8pt>
+File: splot_b_ann.png Graphic file (type png)
+<use splot_b_ann.png>
+Package pdftex.def Info: splot_b_ann.png  used on input line 114.
+(pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
+
+[6 <./boxplot_a_gbm.png>]
+<splot_b_gbm.png, id=40, 481.8pt x 481.8pt>
+File: splot_b_gbm.png Graphic file (type png)
+<use splot_b_gbm.png>
+Package pdftex.def Info: splot_b_gbm.png  used on input line 121.
+(pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
+ [7 <./splot_b_ann.png>]
+<boxplot_b_ann.png, id=46, 2864.7025pt x 2646.88875pt>
+File: boxplot_b_ann.png Graphic file (type png)
+<use boxplot_b_ann.png>
+Package pdftex.def Info: boxplot_b_ann.png  used on input line 128.
+(pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
+ [8 <./splot_b_gbm.png>]
+<boxplot_b_gbm.png, id=51, 2864.7025pt x 2646.88875pt>
+File: boxplot_b_gbm.png Graphic file (type png)
+<use boxplot_b_gbm.png>
+Package pdftex.def Info: boxplot_b_gbm.png  used on input line 135.
+(pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
+
+[9 <./boxplot_b_ann.png>]
+<median_pearsons_cor.png, id=56, 481.8pt x 481.8pt>
+File: median_pearsons_cor.png Graphic file (type png)
+<use median_pearsons_cor.png>
+Package pdftex.def Info: median_pearsons_cor.png  used on input line 154.
+(pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
+ [10 <./boxplot_b_gbm.png>]
+<splot_stage_2.png, id=61, 481.8pt x 481.8pt>
+File: splot_stage_2.png Graphic file (type png)
+<use splot_stage_2.png>
+Package pdftex.def Info: splot_stage_2.png  used on input line 162.
+(pdftex.def)             Requested size: 310.4979pt x 310.50497pt.
+ [11 <./median_pearsons_cor.png>]
+<boxplot_stage_2.png, id=66, 2864.7025pt x 2646.88875pt>
+File: boxplot_stage_2.png Graphic file (type png)
+<use boxplot_stage_2.png>
+Package pdftex.def Info: boxplot_stage_2.png  used on input line 169.
+(pdftex.def)             Requested size: 310.4979pt x 286.87752pt.
+ [12 <./splot_stage_2.png>]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 185.
+
+
+Overfull \hbox (684.91043pt too wide) in paragraph at lines 187--251
+[][] 
+ []
+
+[13 <./boxplot_stage_2.png>] [14]
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 293.
+
+
+LaTeX Warning: No positions in optional float specifier.
+               Default added (so using `tbp') on input line 305.
+
+[15] [16] (./match_ferc_eia_readme.aux) ) 
+Here is how much of TeX's memory you used:
+ 1337 strings out of 480445
+ 20650 string characters out of 5892392
+ 364067 words of memory out of 5000000
+ 18631 multiletter control sequences out of 15000+600000
+ 408368 words of font info for 43 fonts, out of 8000000 for 9000
+ 319 hyphenation exceptions out of 8191
+ 68i,8n,74p,400b,237s stack positions out of 5000i,500n,10000p,200000b,80000s
+ </Users/andrewbartnof/Library/texlive
+/2021basic/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.600pk></usr/local/tex
+live/2021basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local
+/texlive/2021basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/l
+ocal/texlive/2021basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx5.pfb></us
+r/local/texlive/2021basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><
+/usr/local/texlive/2021basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pf
+b></usr/local/texlive/2021basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17
+.pfb></usr/local/texlive/2021basic/texmf-dist/fonts/type1/public/amsfonts/cm/cm
+r5.pfb></usr/local/texlive/2021basic/texmf-dist/fonts/type1/public/amsfonts/cm/
+cmr6.pfb></usr/local/texlive/2021basic/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmr7.pfb></usr/local/texlive/2021basic/texmf-dist/fonts/type1/public/amsfonts
+/cm/cmr8.pfb></usr/local/texlive/2021basic/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmti10.pfb>
+Output written on match_ferc_eia_readme.pdf (16 pages, 1674805 bytes).
+PDF statistics:
+ 128 PDF objects out of 1000 (max. 8388607)
+ 75 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 56 words of extra memory for PDF output out of 10000 (max. 10000000)
+

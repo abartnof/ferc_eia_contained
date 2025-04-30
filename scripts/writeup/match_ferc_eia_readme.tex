@@ -1,0 +1,332 @@
+\documentclass{article}
+\usepackage{graphicx}
+% \usepackage[margin=0.4in]{geometry}
+\usepackage{float}
+
+\begin{document}
+
+\author{Andrew Bartnof, for RMI}
+\title{A Cascading Machine Learning Model for FERC and EIA Data Linkage \\ Andrew Bartnof \& Alex Engel}
+\date{\today}
+2\maketitle
+
+
+
+\section{Introduction}
+
+The FERC Form 1 - Electric Utility Annual Report is a "comprehensive financial and operating report submitted for Electric Rate regulation and financial audits"\footnote{https://www.ferc.gov/general-information-0/electric-industry-forms/form-1-1-f-3-q-electric-historical-vfp-data}. 
+Every year, power plant operators are obliged to fill out this form, and summarize their power plants’ operations.
+There is little, if any, validation for these forms, and no consistent identifiers beyond the one for the reporting entity.
+
+Likewise, each year, the EIA puts out a series of datasets (forms 860 and 923) which describe the power plants in operation in the nation.
+In contrast, EIA forms involve a review and validation process and use internally consistent identifiers for utilities, power plants, generators, and other items reported in EIA forms.
+
+Regrettably, there is no common ID that can be used to look up a single power plant in both the FERC and EIA records. 
+The FERC forms are completed manually by the power plant operators, while the EIA is completed by administrators at the federal government. 
+Consequently, even if these two forms refer to the same power plant by name, they can differ in all sorts of ways. 
+A few examples of how these records can \emph{nearly} align and make data-linkages really hard for a computer:
+\begin{itemize} 
+\item The FERC entry can have a typo; the FERC entry can refer to the new corporate owners while the EIA one refers to the old ones
+\item The FERC entry can do something like clustering plants I through IX, while the EIA doesn’t cluster plants and doesn’t use roman numerals
+\item  The FERC entry can refer to an entire facility, while the EIA records refer to a distinct component of the facility. 
+\end{itemize}
+\noindent The list goes on.
+
+A single FERC entry could be matched to a single EIA entry in a few minutes, if you're doing it by hand. 
+But there are thousands of entries to go through, and every year brings more.
+
+\section{A Cascading Machine-Learning Solution}
+
+Our process required comparing two things. 
+First each hand-written FERC power plant record that could represent, at the discretion of the utility and form-filer, a single generator at a power plant, an arbitrary collection of generators at a power plant, or a whole power plant (we refer to these various aggregations as "plant parts"). 
+And the second, a set of EIA power plant data aggregations constructed to correspond with those possible plant parts used by FERC respondents. 
+The only blocking rule that we imposed was that they had to refer to the same calendar year. 
+
+We've designed a set of machine-learning models that can essentially mimic the ways in which a human would match these by hands.
+Our model looks at each FERC entry individually, just like a human would, and compares it to all of the EIA entries that it \emph{could} link to.
+The only blocking rule that we imposed was that they had to refer to the same calendar year. 
+Finally, our model gives a probability for each FERC entry and all possible EIA entries for that year-- the FERC:EIA linkage with the highest probability wins, and is our preferred match. 
+Easy!
+
+For our FERC and EIA input files, we use the Catalist-Coop PUDL datasets\footnote{https://github.com/catalyst-cooperative/pudl/?tab=readme-ov-file}. 
+Cleverly, Catalist-Coop has broken out each EIA entity into its constituent parts-- so, for a given EIA plant, we can also recognize each generator therein as a separate row, and a possible match. 
+We then compare each FERC entry to every possible broken out EIA record. 
+This means that for each FERC entry, we are matching against (the number of plants in the nation for that year) x (the number of ways in which the parts of said plants can be broken out)-- a very large number.
+
+We designed two feature encodings that represented two different ways of thinking about this problem: in encoding A, we focused on the kinds of proper nouns that a human might focus on. 
+In encoding B, in contrast, we focused on the kinds of technical metrics that effectively describe the plant’s structure and performance. 
+Then, for each feature encoding, we fit both an artificial neural network, and a gradient boosting model (using Keras/Tensorflow, and LightGBM, respectively).
+
+Stage 1 Models:
+\begin{itemize}
+\item Model A, Artificial Neural Network
+\item Model A, Gradient Boosting Model
+\item Model B, Artificial Neural Network
+\item Model B, Gradient Boosting Model
+\end{itemize}
+
+Finally, we fit a second-stage model, a gradient boosting model, which takes all of the above data (the input data for each model, as well as each model’s fitted values), and judges which match between FERC and EIA records is most probable.
+
+Stage 2 Model:
+\begin{itemize}
+\item Gradient Boosting Model
+\end{itemize}
+
+We have had very good results from this architecture.
+Our goodness-of-fit metrics exceeds existing data-linkage options, and generally mimics the kinds of choices we would make manually.
+
+\section{Hyperparameter Search}
+
+The neural network models each had 2 hidden layers, with dropout in order to avoid overfit.
+All of the models were trained in the same general way: we used the RayTune package, using the Optuna optimizer, to perform an initial hyper-parameter search, using a 4/5 of the data for training, and 1/5 as testing. 
+The results of these hyper-parameter searches can be seen in figures \ref{splot_a_ann}, \ref{splot_a_gbm}, \ref{splot_b_ann}, and \ref{splot_b_gbm}.
+From this list of tested hyper-parameters, we selected the most promising hyper-parameter options, and we performed five-fold cross-validation on them (80\% of the data is used to train a model, and 20\% is used to test). 
+Finally, we manually looked at the virtues and shortcomings of each cross-validated option, and chose the hyper-parameters we liked best.
+The results of these cross-validations can be seen in figures \ref{cv_a_ann}, \ref{cv_a_gbm}, \ref{cv_b_ann}, and \ref{cv_b_gbm}.
+
+% Model A, hp and cv
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{splot_a_ann.png} 
+\caption{Distribution of the hyperparameter search for ANN model A}
+\label{splot_a_ann}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{splot_a_gbm.png} 
+\caption{Distribution of the hyperparameter search for GBM model A}
+\label{splot_a_gbm}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{boxplot_a_ann.png} 
+\caption{Cross-validation metrics for ANN model A}
+\label{cv_a_ann}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{boxplot_a_gbm.png} 
+\caption{Cross-validation metrics for GBM model A}
+\label{cv_a_gbm}
+\end{figure}
+
+
+
+% Model B, hp and cv
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{splot_b_ann.png} 
+\caption{Distribution of the hyperparameter search for ANN model B}
+\label{splot_b_ann}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{splot_b_gbm.png} 
+\caption{Distribution of the hyperparameter search for GBM model B}
+\label{splot_b_gbm}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{boxplot_b_ann.png} 
+\caption{Cross-validation metrics for ANN model B}
+\label{cv_b_ann}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{boxplot_b_gbm.png} 
+\caption{Cross-validation metrics for GBM model B}
+\label{cv_b_gbm}
+\end{figure}
+
+
+
+% Cor
+
+Interestingly enough, even though each of the 1st stage models performed admirably, if we compared their responses to each other, we found that their responses didn't correlate very highly (cf figure \ref{median_pearsons_cor.png})!
+This was highly reassuring that a cascade architecture was the way to go.
+The stage 2 model would be a GBM.
+In our model, each of the initial four models gives its fitted values; then, we feed those fitted values, along with some characteristics about the FERC entries in question, into a second-tier model, which gives us our final linkages.
+
+While all of the metrics on the stage 1 models are based on normal 5-fold cross validation (4 folds for training, 1 for testing), for the stage 2 models, 2/5 of the data was held for stage 1 model training; 2/5 for stage 2 model training/ and 1/5 for stage 2 model validation. 
+Consequently, the stage 2 model was actually evaluated based on a model fit on half as many data. We have no doubt that this gives us an extremely conservative set of goodness-of-fit metrics; the final model, which is fit on the entire dataset, should perform even better.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{median_pearsons_cor.png} 
+\caption{Even though each 1st stage model performed admirably, their responses didn't really correlate very highly with each other. This was a good indication that a cascade-model was the right path.}
+\label{median_pearsons_cor.png}
+\end{figure}
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{splot_stage_2.png} 
+\caption{Distribution of the hyperparameter search for stage 2 GBM}
+\label{splot_2}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{boxplot_stage_2.png} 
+\caption{Cross-validation metrics for stage 2 GBM} 
+\label{cv_2}
+\end{figure}
+
+\section{User Guide}
+
+All of the above scripts can be run from within pixi, a package management tool. 
+Please note that for every python file, there is both a jupyter notebook, which is handy for doing interactive work, and a derived .~py file, which can just be run from terminal. Consequently, we’re only listing the .~py files in this workflow.
+
+Also please note that at the top of each script, there is a reference to a directory, \textbf{data\_dir}.
+This is a reference to where you place your working files (eg. on an external harddrive, in your Documents folder, etc). 
+Please change the referent location for \textbf{data\_dir} to wherever your project is located.
+
+The files should be run in the following order:
+
+\begin{table}[]
+\tiny
+\begin{tabular}{lllll}
+\textbf{section}                & \textbf{file \#} & \textbf{directory}                             & \textbf{filename}                                                        & description                                                                                                                                                          \\
+General Scripts                 & 1                & general\_scripts                               & collect\_data.R                                                          & Collect FERC and EIA tables from the Catalyst Co-op pudl sqlite file                                                                                                 \\
+General Scripts                 & 2                & general\_scripts                               & clean\_positive\_matches.R                                               & Load the ground-truth mappings from FERC:EIA; ensure that every row in it is something that we can use in this model                                                 \\
+General Scripts                 & 3                & general\_scripts                               & create\_training\_matches\_and\_mismatches.R                             & First step in creating training dataset: for each ‘ground-truth’ mapping, note several thousand non-valid mappings                                                   \\
+General Scripts                 & 4                & general\_scripts                               & entire\_dataset\_cartesian\_product\_of\_ferc\_and\_eia\_ids.R           & For each FERC observation in a given year, note every EIA observation that it could hypothetically be mapped onto; constrain these mappings only by blocking by year \\
+Prepare training data, models A & 1                & model\_a                                       & model\_a\_create\_comparable\_metrics\_training.R                        & Compare easily comparable metrics                                                                                                                                    \\
+Prepare training data, models A & 2                & model\_a                                       & model\_a\_feature\_engineering\_training.R                               & Feature engineering                                                                                                                                                  \\
+Prepare training data, models A & (not run)        & model\_a                                       & model\_a\_create\_comparable\_metrics\_functions.R                       & Establish functions to be sourced when comparing easily-comparable metrics                                                                                           \\
+Prepare training data, models A & (not run)        & model\_a                                       & model\_a\_feature\_engineering\_functions.R                              & Establish functions to be sourced for feature engineering                                                                                                            \\
+Prepare training data, models B & 1                & model\_b                                       & model\_b\_precreate\_comparison\_tables.R                                & Perform all of the metrics comparisons that will be noted in the feature engineering                                                                                 \\
+Prepare training data, models B & 2                & model\_b                                       & model\_b\_feature\_engineering\_training.R                               & Feature engineering                                                                                                                                                  \\
+Prepare training data, models B & (not run)        & model\_b                                       & model\_b\_feature\_engineering\_functions.R                              & Establish functions to be sourced for feature engineering                                                                                                            \\
+Create model A, ANN             & 1                & model\_a/model\_a\_ann/model\_a\_ann\_training & model\_a\_ann\_hyperparameter\_search.ipynb                              & Perform an initial search for optimal hyperparameters                                                                                                                \\
+Create model A, ANN             & 1                & model\_a/model\_a\_ann/model\_a\_ann\_training & model\_a\_ann\_hyperparameter\_search.py                                 & Perform an initial search for optimal hyperparameters                                                                                                                \\
+Create model A, ANN             & 2                & model\_a/model\_a\_ann/model\_a\_ann\_training & model\_a\_ann\_hyperparameter\_search\_dig\_into\_best\_candidates.ipynb & Perform cross-validation to dig into the most promising hyperparameters                                                                                              \\
+Create model A, ANN             & 2                & model\_a/model\_a\_ann/model\_a\_ann\_training & model\_a\_ann\_hyperparameter\_search\_dig\_into\_best\_candidates.py    & Perform cross-validation to dig into the most promising hyperparameters                                                                                              \\
+Create model A, ANN             & 3                & model\_a/model\_a\_ann/model\_a\_ann\_training & model\_a\_ann\_hyperparameter\_search\_final\_metrics\_analysis.R        & Choose which hyperparameters from the cross-validation to use for the final model                                                                                    \\
+Create model A, ANN             & 4                & model\_a/model\_a\_ann/model\_a\_ann\_training & model\_a\_ann\_fit.ipynb                                                 & Fit model                                                                                                                                                            \\
+Create model A, ANN             & 4                & model\_a/model\_a\_ann/model\_a\_ann\_training & model\_a\_ann\_fit.py                                                    & Fit model                                                                                                                                                            \\
+Create model A, GBM             & 1                & model\_a/model\_a\_gbm/model\_a\_gbm\_training & model\_a\_gbm\_hyperparameter\_search.ipynb                              & Perform an initial search for optimal hyperparameters                                                                                                                \\
+Create model A, GBM             & 1                & model\_a/model\_a\_gbm/model\_a\_gbm\_training & model\_a\_gbm\_hyperparameter\_search.py                                 & Perform an initial search for optimal hyperparameters                                                                                                                \\
+Create model A, GBM             & 2                & model\_a/model\_a\_gbm/model\_a\_gbm\_training & model\_a\_gbm\_hyperparameters\_search\_2\_cv.ipynb                      & Perform cross-validation to dig into the most promising hyperparameters                                                                                              \\
+Create model A, GBM             & 3                & model\_a/model\_a\_gbm/model\_a\_gbm\_training & model\_a\_train\_rank\_hyperparameters.R                                 & Choose which hyperparameters from the cross-validation to use for the final model                                                                                    \\
+Create model A, GBM             & 4                & model\_a/model\_a\_gbm/model\_a\_gbm\_training & model\_a\_gbm\_fit.ipynb                                                 & Fit model                                                                                                                                                            \\
+Create model A, GBM             & 4                & model\_a/model\_a\_gbm/model\_a\_gbm\_training & model\_a\_gbm\_fit.py                                                    & Fit model                                                                                                                                                            \\
+Create model B, ANN             & 1                & model\_b/model\_b\_ann/model\_b\_ann\_training & model\_b\_ann\_hyperparameter\_search.py                                 & Perform an initial search for optimal hyperparameters                                                                                                                \\
+Create model B, ANN             & 1                & model\_b/model\_b\_ann/model\_b\_ann\_training & model\_b\_ann\_hyperparameter\_search.ipynb                              & Perform an initial search for optimal hyperparameters                                                                                                                \\
+Create model B, ANN             & 2                & model\_b/model\_b\_ann/model\_b\_ann\_training & model\_b\_ann\_hyperparameter\_search\_dig\_into\_best\_candidates.ipynb & Perform cross-validation to dig into the most promising hyperparameters                                                                                              \\
+Create model B, ANN             & 2                & model\_b/model\_b\_ann/model\_b\_ann\_training & model\_b\_ann\_hyperparameter\_search\_dig\_into\_best\_candidates.py    & Perform cross-validation to dig into the most promising hyperparameters                                                                                              \\
+Create model B, ANN             & 3                & model\_b/model\_b\_ann/model\_b\_ann\_training & model\_b\_ann\_fit.ipynb                                                 & Fit model                                                                                                                                                            \\
+Create model B, ANN             & 3                & model\_b/model\_b\_ann/model\_b\_ann\_training & model\_b\_ann\_fit.py                                                    & Fit model                                                                                                                                                            \\
+Create model B, ANN             & 4                & model\_b/model\_b\_ann/model\_b\_ann\_training & model\_b\_ann\_hyperparameter\_search\_final\_metrics\_analysis.R        & Choose which hyperparameters from the cross-validation to use for the final model                                                                                    \\
+Create model B, GBM             & 1                & model\_b/model\_b\_gbm/model\_b\_gbm\_training & model\_b\_gbm\_hyperparameter\_search.ipynb                              & Perform an initial search for optimal hyperparameters                                                                                                                \\
+Create model B, GBM             & 1                & model\_b/model\_b\_gbm/model\_b\_gbm\_training & model\_b\_gbm\_hyperparameter\_search.py                                 & Perform an initial search for optimal hyperparameters                                                                                                                \\
+Create model B, GBM             & 2                & model\_b/model\_b\_gbm/model\_b\_gbm\_training & model\_b\_gbm\_hyperparameters\_search\_2\_cv.ipynb                      & Perform cross-validation to dig into the most promising hyperparameters                                                                                              \\
+Create model B, GBM             & 3                & model\_b/model\_b\_gbm/model\_b\_gbm\_training & model\_b\_gbm\_hyperparameters\_search\_choose\_hp.R                     & Choose which hyperparameters from the cross-validation to use for the final model                                                                                    \\
+Create model B, GBM             & 4                & model\_b/model\_b\_gbm/model\_b\_gbm\_training & model\_b\_gbm\_fit.ipynb                                                 & Fit model                                                                                                                                                            \\
+Create model B, GBM             & 4                & model\_b/model\_b\_gbm/model\_b\_gbm\_training & model\_b\_gbm\_fit.py                                                    & Fit model                                                                                                                                                            \\
+Prepare tranches for models A   & 1                & model\_a                                       & model\_a\_create\_comparable\_metrics\_tranches.R                        & Compare easily comparable metrics                                                                                                                                    \\
+Prepare tranches for models B   & 1                & model\_b                                       & model\_b\_feature\_engineering\_tranches.R                               & Feature engineering                                                                                                                                                  \\
+Prepare tranches for models A   & 2                & model\_a                                       & model\_a\_feature\_engineering\_tranches.R                               & Feature engineering                                                                                                                                                  \\
+Predict tranches, models A      & 1                & model\_a/model\_a\_ann/model\_a\_ann\_usage    & model\_a\_ann\_predict.ipynb                                             & Iterate through the tranches’ X files, and return a y\_fit for each row, using the model A ANN                                                                       \\
+Predict tranches, models A      & 1                & model\_a/model\_a\_ann/model\_a\_ann\_usage    & model\_a\_ann\_predict.py                                                & Iterate through the tranches’ X files, and return a y\_fit for each row, using the model A ANN                                                                       \\
+Predict tranches, models A      & 2                & model\_a/model\_a\_gbm/model\_a\_gbm\_usage    & model\_a\_gbm\_predict.py                                                & Iterate through the tranches’ X files, and return a y\_fit for each row, using the model A GBM                                                                       \\
+Predict tranches, models A      & 2                & model\_a/model\_a\_gbm/model\_a\_gbm\_usage    & model\_a\_gbm\_predict.ipynb                                             & Iterate through the tranches’ X files, and return a y\_fit for each row, using the model A GBM                                                                       \\
+Predict tranches, models B      & 1                & model\_b/model\_b\_ann/model\_b\_ann\_usage    & model\_b\_ann\_predict.py                                                & Iterate through the tranches’ X files, and return a y\_fit for each row, using the model B ANN                                                                       \\
+Predict tranches, models B      & 2                & model\_b/model\_b\_gbm/model\_b\_gbm\_usage    & model\_b\_gbm\_predict.ipynb                                             & Iterate through the tranches’ X files, and return a y\_fit for each row, using the model B GBM                                                                       \\
+Predict tranches, models B      & 2                & model\_b/model\_b\_gbm/model\_b\_gbm\_usage    & model\_b\_gbm\_predict.py                                                & Iterate through the tranches’ X files, and return a y\_fit for each row, using the model B GBM                                                                       \\
+Create 2nd stage model          & 1                & model\_stage\_2/model\_stage\_2\_training      & prepare\_for\_model\_2\_hp\_search.py                                    & Perform raytune/optuna hyperparameter search                                                                                                                         \\
+Create 2nd stage model          & 1                & model\_stage\_2/model\_stage\_2\_training      & prepare\_for\_model\_2\_hp\_search.ipynb                                 & Split and prepare the input data for the models                                                                                                                      \\
+Create 2nd stage model          & 2                & model\_stage\_2/model\_stage\_2\_training      & get\_y\_fit\_model\_a.ipynb                                              & Get y-fits from model a ANN and GBM, which will be input for the stage 2 model                                                                                       \\
+Create 2nd stage model          & 3                & model\_stage\_2/model\_stage\_2\_training      & get\_y\_fit\_model\_b.ipynb                                              & Get y-fits from model b ANN and GBM, which will be input for the stage 2 model                                                                                       \\
+Create 2nd stage model          & 4                & model\_stage\_2/model\_stage\_2\_training      & model\_2\_hp\_search.ipynb                                               & Perform raytune/optuna hyperparameter search                                                                                                                         \\
+Create 2nd stage model          & 5                & model\_stage\_2/model\_stage\_2\_training      & cross\_validate\_best\_hp\_candidates.py                                 & Perform cross-validation on the best options returned by the hyperparameter search                                                                                   \\
+Create 2nd stage model          & 5                & model\_stage\_2/model\_stage\_2\_training      & cross\_validate\_best\_hp\_candidates.ipynb                              & Perform cross-validation on the best options returned by the hyperparameter search                                                                                   \\
+Create 2nd stage model          & 6                & model\_stage\_2/model\_stage\_2\_training      & model\_2\_analyze\_cv.R                                                  & Analyze the goodness-of-fit metrics from the cross-validation                                                                                                        \\
+Create 2nd stage model          & 7                & model\_stage\_2/model\_stage\_2\_training      & fit\_second\_stage\_model\_gbm.ipynb                                     & Fit the stage 2 model                                                                                                                                                \\
+Create 2nd stage model          & 7                & model\_stage\_2/model\_stage\_2\_training      & fit\_second\_stage\_model\_gbm.py                                        & Fit the stage 2 model                                                                                                                                                \\
+Create 2nd stage model          & 8                & model\_stage\_2                                & get\_correlations\_and\_misc\_stats\_from\_input\_models.R               & Iterate through the y-fit values from models a and b, to see how much they (dis)agree with each other                                                                \\
+Create 2nd stage model          & 9                & model\_stage\_2                                & analyze\_correlations\_and\_misc\_stats\_from\_input\_models.R           & Analyze the previously collected analytical data comparing the y-fits from models a and b                                                                            \\
+Predict tranches, 2nd stage     & 1                & model\_stage\_2/model\_stage\_2\_usage         & get\_model\_stage\_2\_y\_fit.ipynb                                       & Iterate through all tranches using previously-fit 2nd stage model, return tables containing predicted mappings                                                       \\
+Predict tranches, 2nd stage     & 2                & model\_stage\_2/model\_stage\_2\_usage         & analyze\_final\_fit\_qc.R                                                & perform manual QC on the mappings                                                                                                                                   
+\end{tabular}
+\end{table}
+
+
+
+\section{Appendix}
+
+\begin{table}[H]
+\begin{tabular}{llllll}
+\textbf{fold} & \textbf{accuracy} & \textbf{roc\_auc} & \textbf{log\_loss} & \textbf{precision} & \textbf{recall} \\
+0             & 0.9999            & 0.9846            & 0.0022             & 0.9692             & 0.9692          \\
+1             & 0.9999            & 0.9859            & 0.0022             & 0.9672             & 0.9719          \\
+2             & 0.9999            & 0.9824            & 0.0026             & 0.9633             & 0.9649          \\
+3             & 0.9999            & 0.9855            & 0.0022             & 0.9689             & 0.9711          \\
+4             & 0.9999            & 0.9760            & 0.0035             & 0.9514             & 0.9521         
+\end{tabular}
+\caption{Cross-validation metrics for ANN model A}
+\end{table}
+
+\begin{table}[H]
+\begin{tabular}{llllll}
+\textbf{fold} & \textbf{accuracy} & \textbf{roc\_auc} & \textbf{log\_loss} & \textbf{precision} & \textbf{recall} \\
+0             & 1.0000            & 0.9984            & 0.0003             & 0.9960             & 0.9968          \\
+1             & 1.0000            & 0.9981            & 0.0003             & 0.9953             & 0.9961          \\
+2             & 1.0000            & 0.9985            & 0.0003             & 0.9946             & 0.9969          \\
+3             & 1.0000            & 0.9971            & 0.0004             & 0.9934             & 0.9943          \\
+4             & 1.0000            & 0.9981            & 0.0003             & 0.9962             & 0.9962         
+\end{tabular}
+\caption{Cross-validation metrics for GBM model A}
+\end{table}
+
+\begin{table}[H]
+\begin{tabular}{llllll}
+\textbf{fold} & \textbf{accuracy} & \textbf{roc\_auc} & \textbf{log\_loss} & \textbf{precision} & \textbf{recall} \\
+0             & 0.9998            & 0.9460            & 0.0081             & 0.8830             & 0.8920          \\
+1             & 0.9997            & 0.9374            & 0.0091             & 0.8735             & 0.8749          \\
+2             & 0.9998            & 0.9463            & 0.0081             & 0.8840             & 0.8928          \\
+3             & 0.9998            & 0.9381            & 0.0090             & 0.8749             & 0.8763          \\
+4             & 0.9997            & 0.9276            & 0.0105             & 0.8541             & 0.8554         
+\end{tabular}
+\caption{Cross-validation metrics for ANN model B}
+\end{table}
+
+\begin{table}[]
+\begin{tabular}{llllll}
+\textbf{fold} & \textbf{accuracy} & \textbf{roc\_auc} & \textbf{log\_loss} & \textbf{precision} & \textbf{recall} \\
+0             & 1.0000            & 0.9929            & 0.0011             & 0.9836             & 0.9859          \\
+1             & 1.0000            & 0.9906            & 0.0013             & 0.9813             & 0.9813          \\
+2             & 1.0000            & 0.9931            & 0.0010             & 0.9862             & 0.9862          \\
+3             & 1.0000            & 0.9916            & 0.0012             & 0.9825             & 0.9832          \\
+4             & 1.0000            & 0.9915            & 0.0013             & 0.9808             & 0.9831         
+\end{tabular}
+\caption{Cross-validation metrics for GBM model B}
+\end{table}
+
+\begin{table}[]
+\begin{tabular}{llllll}
+\textbf{fold} & \textbf{accuracy} & \textbf{roc\_auc} & \textbf{log\_loss} & \textbf{precision} & \textbf{recall} \\
+0             & 0.9928            & 0.9936            & 0.0002             & 1.0000             & 0.9859          \\
+1             & 0.9977            & 0.9977            & 0.0002             & 1.0000             & 0.9813          \\
+2             & 0.9969            & 0.9969            & 0.0001             & 1.0000             & 0.9862          \\
+3             & 0.9975            & 0.9975            & 0.0001             & 1.0000             & 0.9832          \\
+4             & 0.9977            & 0.9977            & 0.0001             & 1.0000             & 0.9831         
+\end{tabular}
+\caption{Cross-validation metrics for stage 2 GBM}
+\end{table}
+
+
+
+
+
+
+
+\end{document}
