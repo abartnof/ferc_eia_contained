@@ -59,33 +59,33 @@ We have had very good results from this architecture. Our goodness-of-fit metric
 
 The neural network models each had 2 hidden layers, with dropout in order to avoid overfit. All of the models were trained in the same general way: we used the RayTune package, using the Optuna optimizer, to perform an initial hyper-parameter search, using a 4/5 of the data for training, and 1/5 as testing. The results of these hyper-parameter searches can be seen here:
 
-![](ferc_eia/scripts/writeup/splot_a_ann.png)
+![](scripts/writeup/splot_a_ann.png)
 
-![](ferc_eia/scripts/writeup/splot_a_gbm.png)
+![](scripts/writeup/splot_a_gbm.png)
 
-![](ferc_eia/scripts/writeup/splot_b_ann.png)
+![](scripts/writeup/splot_b_ann.png)
 
-![](ferc_eia/scripts/writeup/splot_b_gbm.png)
+![](scripts/writeup/splot_b_gbm.png)
 
 From this list of tested hyper-parameters, we selected the most promising hyper-parameter options, and we performed five-fold cross-validation on them (80% of the data is used to train a model, and 20% is used to test). Finally, we manually looked at the virtues and shortcomings of each cross-validated option, and chose the hyper-parameters we liked best. The results of these cross-validations can be seen here:
 
-![![](ferc_eia/scripts/writeup/boxplot_a_gbm.png)](ferc_eia/scripts/writeup/boxplot_a_ann.png)
+![](scripts/writeup/boxplot_a_ann.png)
 
-![](ferc_eia/scripts/writeup/boxplot_b_ann.png)
+![![](scripts/writeup/boxplot_b_ann.png)](scripts/writeup/boxplot_a_gbm.png)
 
-![](ferc_eia/scripts/writeup/boxplot_b_gbm.png)
+![](scripts/writeup/boxplot_b_gbm.png)
 
 Interestingly enough, even though each of the 1st stage models performed admirably, if we compared their responses to each other, we found that their responses didn't correlate very highly!
 
-![Median correlation of each stage 1 model's fitted values](ferc_eia/scripts/writeup/median_pearsons_cor.png)
+![Median correlation of each stage 1 model's fitted values](scripts/writeup/median_pearsons_cor.png)
 
 This was highly reassuring that a cascade architecture was the way to go. The stage 2 model would be a GBM. In our model, each of the initial four models gives its fitted values; then, we feed those fitted values, along with some characteristics about the FERC entries in question, into a second-tier model, which gives us our final linkages.
 
 While all of the metrics on the stage 1 models are based on normal 5-fold cross validation (4 folds for training, 1 for testing), for the stage 2 models, 2/5 of the data was held for stage 1 model training; 2/5 for stage 2 model training/ and 1/5 for stage 2 model validation. Consequently, the stage 2 model was actually evaluated based on a model fit on half as many data. We have no doubt that this gives us an extremely conservative set of goodness-of-fit metrics; the final model, which is fit on the entire dataset, should perform even better.
 
-![](ferc_eia/scripts/writeup/splot_stage_2.png)
+![](scripts/writeup/splot_stage_2.png)
 
-![](ferc_eia/scripts/writeup/boxplot_stage_2.png)
+![](scripts/writeup/boxplot_stage_2.png)
 
 All of the above scripts can be run from within pixi, a package management tool. Please note that for every python file, there is both a jupyter notebook, which is handy for doing interactive work, and a derived .\~py file, which can just be run from terminal. Consequently, we’re only listing the .\~py files in this workflow.
 
@@ -94,7 +94,7 @@ Also please note that at the top of each script, there is a reference to a direc
 The files should be run in the following order:
 
 | section                         | file \#   | directory                                | filename                                                         | description                                                                                                                                                          |
-|-------------|-------------|-------------|-------------|----------------------|
+|--------------|--------------|--------------|--------------|-----------------|
 | General Scripts                 | 1         | general_scripts                          | collect_data.R                                                   | Collect FERC and EIA tables from the Catalyst Co-op pudl sqlite file                                                                                                 |
 | General Scripts                 | 2         | general_scripts                          | clean_positive_matches.R                                         | Load the ground-truth mappings from FERC:EIA; ensure that every row in it is something that we can use in this model                                                 |
 | General Scripts                 | 3         | general_scripts                          | create_training_matches_and_mismatches.R                         | First step in creating training dataset: for each ‘ground-truth’ mapping, note several thousand non-valid mappings                                                   |
@@ -163,58 +163,52 @@ The files should be run in the following order:
 
 Model A ANN:
 
-| fold | accuracy | roc_auc | log_loss | precision | recall |
-|---|---|---|---|---|---|
-| 0 | 0.9999385472571590 | 0.984606072555205 | 0.00221498136276296 | 0.969242902208202 | 0.969242902208202 |
-| 1 | 0.9999390168064870 | 0.9859273092369480 | 0.00219805708955556 | 0.96722621902478 | 0.9718875502008030 |
-| 2 | 0.9999281763987650 | 0.9824162581699350 | 0.00258878498808591 | 0.963295269168026 | 0.9648692810457520 |
-| 3 | 0.999940029575288 | 0.9855467325227970 | 0.00216155320192007 | 0.9689158453373770 | 0.9711246200607900 |
-| 4 | 0.9999035185346970 | 0.9760212927756650 | 0.00347754449384696 | 0.9513677811550150 | 0.9520912547528520 |
-
+| fold | accuracy           | roc_auc            | log_loss            | precision          | recall             |
+|------------|------------|------------|------------|------------|------------|
+| 0    | 0.9999385472571590 | 0.984606072555205  | 0.00221498136276296 | 0.969242902208202  | 0.969242902208202  |
+| 1    | 0.9999390168064870 | 0.9859273092369480 | 0.00219805708955556 | 0.96722621902478   | 0.9718875502008030 |
+| 2    | 0.9999281763987650 | 0.9824162581699350 | 0.00258878498808591 | 0.963295269168026  | 0.9648692810457520 |
+| 3    | 0.999940029575288  | 0.9855467325227970 | 0.00216155320192007 | 0.9689158453373770 | 0.9711246200607900 |
+| 4    | 0.9999035185346970 | 0.9760212927756650 | 0.00347754449384696 | 0.9513677811550150 | 0.9520912547528520 |
 
 Model A GBM:
 
-| fold | accuracy | roc_auc | log_loss | precision | recall |
-|---|---|---|---|---|---|
-| 0 | 0.9999927783060310 | 0.9983915662650600 | 2.6029623428967E-04 | 0.9959871589085070 | 0.9967871485943780 |
-| 1 | 0.9999914548903660 | 0.9980536547433900 | 3.0799696981135E-04 | 0.9953379953379950 | 0.9961119751166410 |
-| 2 | 0.9999915728443340 | 0.998463573619632 | 3.0374547789678E-04 | 0.9946442234123950 | 0.9969325153374230 |
-| 3 | 0.999987697032032 | 0.9971231527093600 | 4.4344391309595E-04 | 0.9934372436423300 | 0.9942528735632190 |
-| 4 | 0.999992403034228 | 0.9980969581749050 | 2.7382240109051E-04 | 0.9961977186311790 | 0.9961977186311790 |
-
+| fold | accuracy           | roc_auc            | log_loss            | precision          | recall             |
+|------------|------------|------------|------------|------------|------------|
+| 0    | 0.9999927783060310 | 0.9983915662650600 | 2.6029623428967E-04 | 0.9959871589085070 | 0.9967871485943780 |
+| 1    | 0.9999914548903660 | 0.9980536547433900 | 3.0799696981135E-04 | 0.9953379953379950 | 0.9961119751166410 |
+| 2    | 0.9999915728443340 | 0.998463573619632  | 3.0374547789678E-04 | 0.9946442234123950 | 0.9969325153374230 |
+| 3    | 0.999987697032032  | 0.9971231527093600 | 4.4344391309595E-04 | 0.9934372436423300 | 0.9942528735632190 |
+| 4    | 0.999992403034228  | 0.9980969581749050 | 2.7382240109051E-04 | 0.9961977186311790 | 0.9961977186311790 |
 
 Model B ANN:
 
-| fold | accuracy | roc_auc | log_loss | precision | recall |
-|---|---|---|---|---|---|
-| 0 | 0.9997740913233870 | 0.9459503129890450 | 0.00814257403742981 | 0.8830364058869090 | 0.892018779342723 |
-| 1 | 0.9997484237939150 | 0.9373858651502840 | 0.00906772557306753 | 0.8734793187347930 | 0.8748984565393990 |
-| 2 | 0.9997758749672990 | 0.946342649310873 | 0.00807828499449372 | 0.8840030326004550 | 0.892802450229709 |
-| 3 | 0.9997512463593870 | 0.938085794094174 | 0.0089659900015426 | 0.8749003984063750 | 0.8762968874700720 |
-| 4 | 0.9997095212479830 | 0.9276192307692310 | 0.01046991545461200 | 0.8540706605222730 | 0.8553846153846150 |
-
+| fold | accuracy           | roc_auc            | log_loss            | precision          | recall             |
+|------------|------------|------------|------------|------------|------------|
+| 0    | 0.9997740913233870 | 0.9459503129890450 | 0.00814257403742981 | 0.8830364058869090 | 0.892018779342723  |
+| 1    | 0.9997484237939150 | 0.9373858651502840 | 0.00906772557306753 | 0.8734793187347930 | 0.8748984565393990 |
+| 2    | 0.9997758749672990 | 0.946342649310873  | 0.00807828499449372 | 0.8840030326004550 | 0.892802450229709  |
+| 3    | 0.9997512463593870 | 0.938085794094174  | 0.0089659900015426  | 0.8749003984063750 | 0.8762968874700720 |
+| 4    | 0.9997095212479830 | 0.9276192307692310 | 0.01046991545461200 | 0.8540706605222730 | 0.8553846153846150 |
 
 Model B GBM:
 
-| fold | accuracy | roc_auc | log_loss | precision | recall |
-|---|---|---|---|---|---|
-| 0 | 0.9999695140540210 | 0.992949530516432 | 0.00109882487010317 | 0.9836065573770490 | 0.9859154929577460 |
-| 1 | 0.9999626693371620 | 0.99064865962632 | 0.00134553347213279 | 0.9813160032493910 | 0.9813160032493910 |
-| 2 | 0.99997246245332 | 0.9931018376722820 | 9.9255378771956E-04 | 0.9862174578866770 | 0.9862174578866770 |
-| 3 | 0.9999657166456850 | 0.9916113328012770 | 0.00123569733995638 | 0.9824561403508770 | 0.9832402234636870 |
-| 4 | 0.9999638822715750 | 0.9915288461538460 | 0.00130181488456835 | 0.9808135072908670 | 0.9830769230769230 |
-
+| fold | accuracy           | roc_auc            | log_loss            | precision          | recall             |
+|------------|------------|------------|------------|------------|------------|
+| 0    | 0.9999695140540210 | 0.992949530516432  | 0.00109882487010317 | 0.9836065573770490 | 0.9859154929577460 |
+| 1    | 0.9999626693371620 | 0.99064865962632   | 0.00134553347213279 | 0.9813160032493910 | 0.9813160032493910 |
+| 2    | 0.99997246245332   | 0.9931018376722820 | 9.9255378771956E-04 | 0.9862174578866770 | 0.9862174578866770 |
+| 3    | 0.9999657166456850 | 0.9916113328012770 | 0.00123569733995638 | 0.9824561403508770 | 0.9832402234636870 |
+| 4    | 0.9999638822715750 | 0.9915288461538460 | 0.00130181488456835 | 0.9808135072908670 | 0.9830769230769230 |
 
 ## Stage 2 Model
 
 Model 2 GBM:
 
-| fold_num | precision | recall | log_loss | roc_auc |
-|---|---|---|---|---|
-| 0 | 0.992776886035313 | 0.993574297188755 | 1.68657903037569E-04 | 0.9999832702698340 |
-| 1 | 0.9976671850699840 | 0.9976671850699840 | 1.64670284905285E-04 | 0.9999808555589680 |
-| 2 | 0.9969325153374230 | 0.9969325153374230 | 1.45518150547692E-04 | 0.9999966046543900 |
-| 3 | 0.9975369458128080 | 0.9975369458128080 | 1.16802004803132E-04 | 0.9999866689045810 |
-| 4 | 0.9977186311787070 | 0.9977186311787070 | 1.37101913610979E-04 | 0.9999959727623650 |
-
-
+| fold_num | precision          | recall             | log_loss             | roc_auc            |
+|---------------|---------------|---------------|---------------|---------------|
+| 0        | 0.992776886035313  | 0.993574297188755  | 1.68657903037569E-04 | 0.9999832702698340 |
+| 1        | 0.9976671850699840 | 0.9976671850699840 | 1.64670284905285E-04 | 0.9999808555589680 |
+| 2        | 0.9969325153374230 | 0.9969325153374230 | 1.45518150547692E-04 | 0.9999966046543900 |
+| 3        | 0.9975369458128080 | 0.9975369458128080 | 1.16802004803132E-04 | 0.9999866689045810 |
+| 4        | 0.9977186311787070 | 0.9977186311787070 | 1.37101913610979E-04 | 0.9999959727623650 |

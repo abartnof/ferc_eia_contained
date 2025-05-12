@@ -114,13 +114,13 @@ perform an initial hyper-parameter search, using a 4/5 of the data for
 training, and 1/5 as testing. The results of these hyper-parameter
 searches can be seen here:
 
-![](ferc_eia/scripts/writeup/splot_a_ann.png)
+![](scripts/writeup/splot_a_ann.png)
 
-![](ferc_eia/scripts/writeup/splot_a_gbm.png)
+![](scripts/writeup/splot_a_gbm.png)
 
-![](ferc_eia/scripts/writeup/splot_b_ann.png)
+![](scripts/writeup/splot_b_ann.png)
 
-![](ferc_eia/scripts/writeup/splot_b_gbm.png)
+![](scripts/writeup/splot_b_gbm.png)
 
 From this list of tested hyper-parameters, we selected the most
 promising hyper-parameter options, and we performed five-fold
@@ -130,22 +130,22 @@ shortcomings of each cross-validated option, and chose the
 hyper-parameters we liked best. The results of these cross-validations
 can be seen here:
 
+![](scripts/writeup/boxplot_a_ann.png)
+
 <figure>
-<img src="ferc_eia/scripts/writeup/boxplot_a_ann.png" alt="" />
+<img src="scripts/writeup/boxplot_a_gbm.png" alt="" />
 <figcaption aria-hidden="true"><img
-src="ferc_eia/scripts/writeup/boxplot_a_gbm.png" /></figcaption>
+src="scripts/writeup/boxplot_b_ann.png" /></figcaption>
 </figure>
 
-![](ferc_eia/scripts/writeup/boxplot_b_ann.png)
-
-![](ferc_eia/scripts/writeup/boxplot_b_gbm.png)
+![](scripts/writeup/boxplot_b_gbm.png)
 
 Interestingly enough, even though each of the 1st stage models performed
 admirably, if we compared their responses to each other, we found that
 their responses didn’t correlate very highly!
 
 <figure>
-<img src="ferc_eia/scripts/writeup/median_pearsons_cor.png"
+<img src="scripts/writeup/median_pearsons_cor.png"
 alt="Median correlation of each stage 1 model’s fitted values" />
 <figcaption aria-hidden="true">Median correlation of each stage 1
 model’s fitted values</figcaption>
@@ -166,9 +166,9 @@ fit on half as many data. We have no doubt that this gives us an
 extremely conservative set of goodness-of-fit metrics; the final model,
 which is fit on the entire dataset, should perform even better.
 
-![](ferc_eia/scripts/writeup/splot_stage_2.png)
+![](scripts/writeup/splot_stage_2.png)
 
-![](ferc_eia/scripts/writeup/boxplot_stage_2.png)
+![](scripts/writeup/boxplot_stage_2.png)
 
 All of the above scripts can be run from within pixi, a package
 management tool. Please note that for every python file, there is both a
